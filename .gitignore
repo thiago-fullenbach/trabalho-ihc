@@ -1,0 +1,23 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/ponto-facil/node_modules
+/ponto-facil/.pnp
+/ponto-facil/.pnp.js
+
+# testing
+/ponto-facil/coverage
+
+# production
+/ponto-facil/build
+
+# misc
+/ponto-facil/.DS_Store
+/ponto-facil/.env.local
+/ponto-facil/.env.development.local
+/ponto-facil/.env.test.local
+/ponto-facil/.env.production.local
+
+/ponto-facil/npm-debug.log*
+/ponto-facil/yarn-debug.log*
+/ponto-facil/yarn-error.log*
