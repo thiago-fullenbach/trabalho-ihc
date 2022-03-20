@@ -1,4 +1,7 @@
 import React from "react";
+import UiBotao from "../../ui/UiBotao";
+import UiCampoTexto from "../../ui/UiCampoTexto";
+import UiCampoSenha from "../../ui/UiCampoSenha";
 
 const VwEntrar576px = (props) => {
   const { viewProps } = props;
@@ -13,20 +16,24 @@ const VwEntrar576px = (props) => {
       <h2>Ponto Fácil</h2>
       <h3>Login 576px</h3>
       <div>
-        <label htmlFor="campoUsuario">Usuário</label>
-        <input
-          id="campoUsuario"
-          value={logicaDadosLogin.campoUsuario}
-          onChange={changeCampoUsuario}
+        <UiCampoTexto
+          idCampo="campoUsuario"
+          labelCampo="Usuário"
+          onChangeCampo={changeCampoUsuario}
+          valueCampo={logicaDadosLogin.campoUsuario}
         />
-        <label htmlFor="campoSenha">Senha</label>
-        <input
-          type="password"
-          id="campoSenha"
-          value={logicaDadosLogin.campoSenha}
-          onChange={changeCampoSenha}
+        <UiCampoSenha
+          idCampo="campoSenha"
+          labelCampo="Senha"
+          onChangeCampo={changeCampoSenha}
+          valueCampo={logicaDadosLogin.campoSenha}
         />
-        <button onClick={submitDadosLogin}>Entrar</button>
+        <UiBotao
+          temIconeBotao={false}
+          classeIconeBotao=""
+          labelBotao="Entrar"
+          onClickBotao={submitDadosLogin}
+        />
       </div>
     </div>
   );

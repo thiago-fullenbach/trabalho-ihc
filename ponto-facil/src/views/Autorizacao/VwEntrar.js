@@ -27,13 +27,11 @@ const VwEntrar = (props) => {
   }
 
   const changeCampoUsuario = (value) => {
-    value = value.target.value;
     let logicaDadosNovo = LogicaDadosLogin.doAntigo(logicaDadosLogin);
     logicaDadosNovo.campoUsuario = value;
     setLogicaDadosLogin(logicaDadosNovo);
   };
   const changeCampoSenha = (value) => {
-    value = value.target.value;
     let logicaDadosNovo = LogicaDadosLogin.doAntigo(logicaDadosLogin);
     logicaDadosNovo.campoSenha = value;
     setLogicaDadosLogin(logicaDadosNovo);
