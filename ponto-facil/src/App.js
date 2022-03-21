@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, useState } from "react";
-import logo from "./logo.svg";
 import "./App.css";
 import VwEntrar from "./views/Autorizacao/VwEntrar";
 

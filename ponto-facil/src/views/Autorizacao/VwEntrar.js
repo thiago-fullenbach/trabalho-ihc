@@ -1,24 +1,19 @@
 import React, { useState } from "react";
 import ApiUtil from "../../chamada-api/ApiUtil";
 import LogicaDadosLogin from "./LogicaDadosLogin";
-import VwEntrar360px from "./VwEntrar360px";
-import VwEntrar576px from "./VwEntrar576px";
-import VwEntrar992px from "./VwEntrar992px";
+import UiCampoTexto from "../../ui/UiCampoTexto";
+import UiCampoSenha from "../../ui/UiCampoSenha";
+import UiBotao from "../../ui/UiBotao";
+import "./VwEntrar.css";
 
 const VwEntrar = (props) => {
   const { viewProps } = props;
   const {
-    larguraEmUso,
     setLogicaUsuarioAutorizacao,
-    caminhoPaginaAtual,
-    setCaminhoPaginaAtual,
   } = viewProps;
 
-  let usestateLogicaDadosLogin = new LogicaDadosLogin();
-  usestateLogicaDadosLogin.campoUsuario = "";
-  usestateLogicaDadosLogin.campoSenha = "";
   const [logicaDadosLogin, setLogicaDadosLogin] = useState(
-    usestateLogicaDadosLogin
+    new LogicaDadosLogin()
   );
   if (!logicaDadosLogin.listaUsuariosCadastrados) {
     (async () => {
@@ -46,19 +41,33 @@ const VwEntrar = (props) => {
       );
     })();
   };
-  const viewPropsFilho = {
-    logicaDadosLogin,
-    changeCampoUsuario,
-    changeCampoSenha,
-    submitDadosLogin,
-  };
 
-  if (larguraEmUso == "360px")
-    return <VwEntrar360px viewProps={viewPropsFilho} />;
-  if (larguraEmUso == "576px")
-    return <VwEntrar576px viewProps={viewPropsFilho} />;
-  if (larguraEmUso == "992px")
-    return <VwEntrar992px viewProps={viewPropsFilho} />;
+  return (
+    <div className="d-flex-column">
+      <h2>Ponto Fácil</h2>
+      <h3>Login</h3>
+      <div>
+        <UiCampoTexto
+          idCampo="campoUsuario"
+          labelCampo="Usuário"
+          onChangeCampo={changeCampoUsuario}
+          valueCampo={logicaDadosLogin.campoUsuario}
+        />
+        <UiCampoSenha
+          idCampo="campoSenha"
+          labelCampo="Senha"
+          onChangeCampo={changeCampoSenha}
+          valueCampo={logicaDadosLogin.campoSenha}
+        />
+        <UiBotao
+          temIconeBotao={false}
+          classeIconeBotao=""
+          labelBotao="Entrar"
+          onClickBotao={submitDadosLogin}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default VwEntrar;
