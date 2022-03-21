@@ -26,7 +26,6 @@ function App() {
     caminhoPaginaAtual,
     setCaminhoPaginaAtual,
   };
-  console.log(viewProps);
   if (caminhoPaginaAtual == "/Login") return <VwEntrar viewProps={viewProps} />;
 }
 

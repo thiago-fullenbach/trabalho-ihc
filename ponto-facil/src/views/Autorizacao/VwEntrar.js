@@ -8,16 +8,16 @@ import "./VwEntrar.css";
 
 const VwEntrar = (props) => {
   const { viewProps } = props;
-  const {
-    setLogicaUsuarioAutorizacao,
-  } = viewProps;
+  const { setLogicaUsuarioAutorizacao } = viewProps;
 
   const [logicaDadosLogin, setLogicaDadosLogin] = useState(
     new LogicaDadosLogin()
   );
   if (!logicaDadosLogin.listaUsuariosCadastrados) {
     (async () => {
-      await logicaDadosLogin.carregarDadosApi();
+      let logicaDadosNovo = LogicaDadosLogin.doAntigo(logicaDadosLogin);
+      await logicaDadosNovo.carregarDadosApi();
+      setLogicaDadosLogin(logicaDadosNovo);
     })();
   }
 
