@@ -1,0 +1,24 @@
+.Main {
+    display: grid;
+    grid-template-areas: 
+        "logo header header"
+        "menu content content"
+        "menu content content"
+        "menu footer footer";
+    
+        grid-template-rows: 100px 1fr 1fr;
+        grid-template-columns: 250px 1fr;
+    height: 100vh;
+}
+
+@media only screen and (max-width: 768px) {
+    .Main {
+        grid-template-areas: 
+        "logo header header"
+        "menu menu menu"
+        "content content content"
+        "footer footer footer";
+
+        grid-template-rows: 100px 100px 1fr;
+    }
+}

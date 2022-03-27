@@ -1,0 +1,6 @@
+.Content {
+    background-color: #ddd;
+
+    grid-area: content;
+    padding: 20px 30px;
+}

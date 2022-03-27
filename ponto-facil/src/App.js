@@ -1,32 +1,16 @@
-import React, { useLayoutEffect, useState } from "react";
+import React from "react";
 import "./App.css";
-import VwEntrar from "./views/Autorizacao/VwEntrar";
+import Login from "./components/View/Login";
+import Main from "./components/View/Main";
+import { Routes, Route } from "react-router-dom";
 
 function App() {
-  const [largura, setLargura] = useState(0);
-  const [larguraEmUso, setLarguraEmUso] = useState("360px");
-
-  useLayoutEffect(() => {
-    let larg = window.innerWidth;
-    setLargura(larg);
-    setLarguraEmUso("360px");
-    if (larg >= 576) setLarguraEmUso("576px");
-    if (larg >= 992) setLarguraEmUso("992px");
-  });
-
-  const [caminhoPaginaAtual, setCaminhoPaginaAtual] = useState("/Login");
-
-  const [logicaUsuarioAutorizacao, setLogicaUsuarioAutorizacao] =
-    useState(null);
-
-  const viewProps = {
-    larguraEmUso,
-    logicaUsuarioAutorizacao,
-    setLogicaUsuarioAutorizacao,
-    caminhoPaginaAtual,
-    setCaminhoPaginaAtual,
-  };
-  if (caminhoPaginaAtual == "/Login") return <VwEntrar viewProps={viewProps} />;
+  return (
+    <Routes>
+      <Route exact path="/main/*" element={<Main />}></Route>
+      <Route path="/" element={<Login />}></Route>
+    </Routes>
+  )
 }
 
 export default App;

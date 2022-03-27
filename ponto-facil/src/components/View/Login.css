@@ -1,0 +1,15 @@
+.Login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+
+    background-image: url('../../assets/login-signup-bg.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.Login .inputGroup {
+    width: 100%;
+    margin: 20px 0;
+}

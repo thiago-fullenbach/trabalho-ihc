@@ -1,0 +1,17 @@
+.ListItem {
+    padding: 10px;
+}
+
+.ListItem:hover {
+    background-color: #009D99;
+    cursor: pointer;
+}
+
+.NavLink {
+    display: block;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 24px;
+    width: 100%;
+}
