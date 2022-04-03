@@ -26,9 +26,9 @@ const Login = () => {
                 <Title>Ponto Fácil</Title>
                 <Form onSubmit={handleSubmit} type="post">
                     <div className="inputGroup">
-                        <Input name="login" placeholder="Usuário" 
+                        <Input name="login" placeholder="Usuário" label="Login" 
                             value={login} onChange={e => setLogin(e.target.value)}/>
-                        <Input type="password" name="pwd" placeholder="Senha" 
+                        <Input type="password" name="pwd" placeholder="Senha" label="Senha"
                             value={password} onChange={e => setPassword(e.target.value)}/>
                     </div>
                     <Button type="submit">Entrar</Button>

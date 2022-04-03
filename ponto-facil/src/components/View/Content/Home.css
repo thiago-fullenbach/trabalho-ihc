@@ -1,0 +1,11 @@
+.Home {
+    border-radius: 5px;
+    padding: 30px;
+    background-color: white;
+}
+
+.Home .btnGroup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
