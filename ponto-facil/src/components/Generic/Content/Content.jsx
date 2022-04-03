@@ -1,6 +1,6 @@
 import React from "react";
-import Home from '../View/Main/Home';
-import Config from '../View/Main/Config';
+import Home from '../../View/Main/Home';
+import Config from '../../View/Main/Config';
 import { Routes, Route } from "react-router-dom";
 import './Content.css'
 

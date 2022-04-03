@@ -1,6 +1,6 @@
 import React from "react";
-import NavLink from "./Navegation/NavLink";
-import NavList from "./Navegation/NavList";
+import NavLink from "../Navegation/NavLink";
+import NavList from "../Navegation/NavList";
 import './Menu.css'
 
 const Menu = () => {

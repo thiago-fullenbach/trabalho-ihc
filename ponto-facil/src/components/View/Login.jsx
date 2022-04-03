@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import Form from "../Generic/Form/Form";
-import Input from "../Generic/Form/Input";
-import Button from "../Generic/Form/Button";
-import Card from "../Generic/Card";
-import Title from "../Generic/Title";
+import Input from "../Generic/Input/Input";
+import Button from "../Generic/Button/Button";
+import Card from "../Generic/Card/Card";
+import Title from "../Generic/Title/Title";
 import './Login.css';
 
 const Login = () => {
