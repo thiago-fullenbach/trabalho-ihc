@@ -21,3 +21,12 @@
 /ponto-facil/npm-debug.log*
 /ponto-facil/yarn-debug.log*
 /ponto-facil/yarn-error.log*
+
+/node_modules
+
+/PontoFacil.Api/bin
+/PontoFacil.Api/obj
+
+/MariaDB
+
+/.vscode
