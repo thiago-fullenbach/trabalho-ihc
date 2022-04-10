@@ -1,0 +1,9 @@
+button.button {
+    background-color: var(--cor-auxiliar-1);
+    border-color: var(--cor-auxiliar-1);
+}
+
+button.button:hover {
+    background-color: var(--cor-auxiliar-2);
+    border-color: var(--cor-auxiliar-2);
+}

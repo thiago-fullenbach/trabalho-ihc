@@ -1,0 +1,23 @@
+div.card {
+    background-color: var(--cor-primaria);
+    color: var(--cor-secundaria);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+div.card h1.card-title {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+
+    padding: 15px;
+    margin: 0;
+    background-color: var(--cor-auxiliar-1);
+    width: 100%;
+}

@@ -1,0 +1,46 @@
+div.login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+div.login div.card {
+    width: 25%;
+}
+
+form.login-form {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--cor-primaria);
+}
+
+form.login-form div.button-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 50px 25px 30px;
+    gap: 10px;
+}
+
+form.login-form div.button-group button.button {
+    flex-grow: 10;
+}
+
+@media(max-width: 1400px) {
+    div.login div.card {
+        width: 50%;
+    }
+}
+
+@media(max-width: 768px) {
+    div.login div.card {
+        width: 80%;
+    }
+}
+
+@media(max-width: 576px) {
+    div.login div.card {
+        width: 90%;
+    }
+}
