@@ -22,7 +22,19 @@ public class AutorizarAttribute : ActionFilterAttribute
         }
 
         // antes de ser consumido pelo endpoint
+        var valores = context.HttpContext.Request.Headers;
+        if (!valores.ContainsKey("identidadeSessao"))
+        {
+            context.Result = new ObjectResult(new DevolvidoMensagemDTO { Mensagem = Mensagens.ERRO_SESSAO_INVALIDA }) { StatusCode = (int)HttpStatusCode.Unauthorized };
+            return;
+        }
         string jsonDadosSessao = context.HttpContext.Request.Headers["identidadeSessao"];
+        if (string.IsNullOrWhiteSpace(jsonDadosSessao))
+        {
+            context.Result = new ObjectResult(new DevolvidoMensagemDTO { Mensagem = Mensagens.ERRO_SESSAO_INVALIDA }) { StatusCode = (int)HttpStatusCode.Unauthorized };
+            return;
+        }
+
         IdentidadeSessaoDTO dadosSessao = JsonConvert.DeserializeObject<IdentidadeSessaoDTO>(jsonDadosSessao) ?? new IdentidadeSessaoDTO();
 
         SessaoAberta? doSql_sessao = null;
@@ -33,7 +45,7 @@ public class AutorizarAttribute : ActionFilterAttribute
         }
         catch (RepositorioException ex)
         {
-            context.Result = new ObjectResult((int)HttpStatusCode.Unauthorized) { Value = new DevolvidoMensagemDTO { Mensagem = ex.Message } };
+            context.Result = new ObjectResult(new DevolvidoMensagemDTO { Mensagem = ex.Message }) { StatusCode = (int)HttpStatusCode.Unauthorized };
             retornar = true;
         }
         if (retornar) return;
