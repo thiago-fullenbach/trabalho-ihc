@@ -8,10 +8,10 @@ export default props => {
     return (
         <aside className="menu-area">
             <nav className="menu">
-                <NavLink path="/home" icon={faHome} label="Início" />
-                <NavLink path="/employees" icon={faUserGroup} label="Funcionários" />
-                <NavLink path="/config" icon={faWrench} label="Configurações" />
-                <NavLink path="/login" icon={faRightToBracket} label="Sair" />
+                <NavLink path="/main/home" icon={faHome} label="Início" />
+                <NavLink path="/main/employees" icon={faUserGroup} label="Funcionários" />
+                <NavLink path="/main/config" icon={faWrench} label="Configurações" />
+                <NavLink path="/" icon={faRightToBracket} label="Sair" />
             </nav>
         </aside>
     )

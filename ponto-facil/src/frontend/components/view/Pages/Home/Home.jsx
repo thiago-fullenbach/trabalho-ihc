@@ -12,7 +12,7 @@ const headerProps = {
 export default props => {
     return (
         <Main {...headerProps} >
-                <div className="display-4">Bem Vindo!</div>
+                <div className="display-4">Bem Vindo, user_name!</div>
                 <hr />
                 <p className="mb-0">Sistema para exemplificar a construção de um cadastro desenvolvido em React!</p>
         </Main>

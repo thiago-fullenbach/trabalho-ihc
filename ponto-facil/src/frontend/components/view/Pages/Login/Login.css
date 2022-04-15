@@ -3,6 +3,9 @@ div.login {
     align-items: center;
     justify-content: center;
     height: 100vh;
+    background-image: url("../../../../../assets/login-signup-bg.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 div.login div.card {
@@ -12,7 +15,6 @@ div.login div.card {
 form.login-form {
     width: 100%;
     padding: 10px;
-    background-color: var(--cor-primaria);
 }
 
 form.login-form div.button-group {

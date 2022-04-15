@@ -5,6 +5,10 @@
 /ponto-facil/.pnp
 /ponto-facil/.pnp.js
 
+/backend-mocado/node_modules
+/backend-mocado/.pnp
+/backend-mocado/.pnp.js
+
 # testing
 /ponto-facil/coverage
 
