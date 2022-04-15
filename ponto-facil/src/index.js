@@ -5,14 +5,12 @@ import './index.css';
 import App from './frontend/main/App';
 import Login from './frontend/components/view/Pages/Login/Login';
 
-const [sessao, setSessao] = React.useState({});
-
 ReactDOM.render(
   <BrowserRouter>
     <Routes>
-      <Route exact path="/" element={<Login enviarSessao={sessao} enviarSetSessao={setSessao} />} />
+      <Route exact path="/" element={<Login/>} />
       <Route path="/main/*" element={<App />} />
-      <Route exact path="*" element={<Login enviarSessao={sessao} enviarSetSessao={setSessao} />} />
+      <Route exact path="*" element={<Login/>} />
     </Routes>
   </BrowserRouter>
 , document.getElementById('root'));

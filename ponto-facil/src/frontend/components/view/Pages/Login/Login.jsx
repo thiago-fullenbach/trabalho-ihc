@@ -11,15 +11,13 @@ import ApiUtil from '../../../../../chamada-api/ApiUtil';
 export default props => {
     const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')
-
-    let sessao = props.enviarSessao;
-    let setSessao = props.enviarSetSessao;
+    const [sessao, setSessao] = React.useState({});
 
     const handleSubmit = e => {
         e.preventDefault();
         console.log("Validar Usuário e Senha");
         (async () => {
-            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, user, pwd);
+            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, userName, password);
             console.log(r);
             if (r.int_status == 404)
             {
