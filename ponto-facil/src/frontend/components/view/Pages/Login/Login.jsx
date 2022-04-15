@@ -6,15 +6,26 @@ import Input from '../../../templates/Input/Input';
 import Button from '../../../templates/Button/Button';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 
+import ApiUtil from '../../../../../chamada-api/ApiUtil';
+
 export default props => {
     const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')
 
+    let sessao = props.enviarSessao;
+    let setSessao = props.enviarSetSessao;
+
     const handleSubmit = e => {
         e.preventDefault();
-
-        console.log(userName)
-        console.log(password)
+        console.log("Validar Usuário e Senha");
+        (async () => {
+            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, user, pwd);
+            console.log(r);
+            if (r.int_status == 404)
+            {
+                 // 
+            }
+        })();
     }
 
     return (

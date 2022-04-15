@@ -6,6 +6,8 @@ import Config from "../components/view/Pages/Config/Config";
 import EmployeeCrud from "../components/view/Pages/Employees/EmployeeCrud";
 
 export default props => {
+
+    
     return (
         <Routes>
             <Route exact path ="/home" element={<Home />}></Route>
