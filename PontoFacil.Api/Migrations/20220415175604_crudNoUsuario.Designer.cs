@@ -11,8 +11,8 @@ using PontoFacil.Api.Modelo.Contexto;
 namespace PontoFacil.Api.Migrations
 {
     [DbContext(typeof(PontoFacilContext))]
-    [Migration("20220403195133_v1_crudNoUsuario_Inicial")]
-    partial class v1_crudNoUsuario_Inicial
+    [Migration("20220415175604_crudNoUsuario")]
+    partial class crudNoUsuario
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,19 +23,13 @@ namespace PontoFacil.Api.Migrations
 
             modelBuilder.Entity("PontoFacil.Api.Modelo.Acesso", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
                     b.Property<int>("IdRecurso")
                         .HasColumnType("int");
 
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdRecurso");
+                    b.HasKey("IdRecurso", "IdUsuario");
 
                     b.HasIndex("IdUsuario");
 

@@ -5,14 +5,22 @@ import Button from "../Generic/Button/Button";
 import Card from "../Generic/Card/Card";
 import Title from "../Generic/Title/Title";
 import './Login.css';
+import ApiUtil from "../../chamada-api/ApiUtil";
 
-const Login = () => {
+const Login = (props) => {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
 
+    const { sessaoTransf, setSessaoTransf } = props;
+
     const submitForm = () => {
-        console.log(login)
-        console.log(password)
+        console.log(login);
+        console.log(password);
+
+        (async () => {
+            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessaoTransf, login, password);
+            console.log(r);
+        })();
     }
 
     const handleSubmit = e => {

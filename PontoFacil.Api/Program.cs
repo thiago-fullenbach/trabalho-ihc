@@ -15,6 +15,18 @@ builder.Services.AddDbContext<PontoFacilContext>(options => {
     options.UseMySql(conexao_mariaDb, ServerVersion.AutoDetect(conexao_mariaDb));
 });
 builder.Services.AdicionarBibliotecaDeRepositorios();
+string permissoesCorsNome = "_permissoesCors";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: permissoesCorsNome,
+                      policy  =>
+                      {
+                          policy.WithOrigins("http://localhost:3000")
+                                             .AllowAnyHeader()
+                                             .AllowAnyMethod()
+                                             .WithExposedHeaders("sessao");
+                      });
+});
 
 var app = builder.Build();
 
@@ -26,6 +38,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(permissoesCorsNome);
 
 app.UseAuthorization();
 

@@ -21,19 +21,13 @@ namespace PontoFacil.Api.Migrations
 
             modelBuilder.Entity("PontoFacil.Api.Modelo.Acesso", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
                     b.Property<int>("IdRecurso")
                         .HasColumnType("int");
 
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdRecurso");
+                    b.HasKey("IdRecurso", "IdUsuario");
 
                     b.HasIndex("IdUsuario");
 

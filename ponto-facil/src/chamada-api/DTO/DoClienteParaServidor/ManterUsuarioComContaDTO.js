@@ -1,32 +1,32 @@
 export default class ManterUsuarioComContaDTO {
-  get nome() {
+  get string_nome() {
     return this._nome;
   }
-  set nome(value) {
+  set string_nome(value) {
     this._nome = value;
   }
-  get cpf() {
+  get string_cpf() {
     return this._cpf;
   }
-  set cpf(value) {
+  set string_cpf(value) {
     this._cpf = value;
   }
-  get dataNascimento() {
+  get date_dataNascimento() {
     return this._dataNascimento;
   }
-  set dataNascimento(value) {
+  set date_dataNascimento(value) {
     this._dataNascimento = value;
   }
-  get login() {
+  get string_login() {
     return this._login;
   }
-  set login(value) {
+  set string_login(value) {
     this._login = value;
   }
-  get senha() {
+  get string_senha() {
     return this._senha;
   }
-  set senha(value) {
+  set string_senha(value) {
     this._senha = value;
   }
 }

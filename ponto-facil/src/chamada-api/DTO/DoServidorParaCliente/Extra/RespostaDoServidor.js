@@ -1,37 +1,54 @@
-import IdentidadeSessaoDTO from "../../DoClienteParaServidor/IdentidadeSessaoDTO";
 import DevolvidoMensagemDTO from "../DevolvidoMensagemDTO";
+import RecursoPermitidoDTO from "../RecursoPermitidoDTO";
+import SessaoAtualizadaDTO from "../SessaoAtualizadaDTO";
 
 export default class RespostaDoServidor {
-  get status() {
-    return this.status;
+  get int_status() {
+    return this._status;
   }
-  set status(value) {
-    this.status = value;
+  set int_status(value) {
+    this._status = value;
   }
-  get identidadeSessaoDTO() {
-    return this._identidadeSessaoDTO;
+  get SessaoAtualizadaDTO_sessao() {
+    return this._sessao;
   }
-  set identidadeSessaoDTO(value) {
-    this._identidadeSessaoDTO = value;
+  set SessaoAtualizadaDTO_sessao(value) {
+    this._sessao = value;
   }
-  get devolvidoMensagemDTO() {
-    return this._devolvidoMensagemDTO;
+  get DevolvidoMensagemDTO_corpo() {
+    return this._corpo;
   }
-  set devolvidoMensagemDTO(value) {
-    this._devolvidoMensagemDTO = value;
+  set DevolvidoMensagemDTO_corpo(value) {
+    this._corpo = value;
   }
 
-  static daRequisicaoAxios(requisicaoAxios) {
-    let novaResposta = new RespostaDoServidor();
-    novaResposta.status = requisicaoAxios.status;
-    novaResposta.identidadeSessaoDTO = new IdentidadeSessaoDTO();
-    novaResposta.identidadeSessaoDTO.id =
-      requisicaoAxios.headers["identidadeSessao_Id"];
-    novaResposta.identidadeSessaoDTO.hexVerificacao =
-      requisicaoAxios.headers["identidadeSessao_HexVerificacao"];
-    novaResposta.devolvidoMensagemDTO = new DevolvidoMensagemDTO();
-    novaResposta.devolvidoMensagemDTO.devolvido =
-      requisicaoAxios.data.devolvido;
-    novaResposta.devolvidoMensagemDTO.mensagem = requisicaoAxios.data.mensagem;
+  static RespostaDoServidor_fromAxios(AxiosResponse_resposta) {
+    let RespostaDoServidor_retorno = new RespostaDoServidor();
+    RespostaDoServidor_retorno.int_status = AxiosResponse_resposta.status;
+    RespostaDoServidor_retorno.SessaoAtualizadaDTO_sessao =
+      new SessaoAtualizadaDTO();
+    let any_dadosSessao = JSON.parse(
+      AxiosResponse_resposta.headers["sessao"]
+    );
+    RespostaDoServidor_retorno.SessaoAtualizadaDTO_sessao.int_id =
+      any_dadosSessao.Id;
+    RespostaDoServidor_retorno.SessaoAtualizadaDTO_sessao.string_hexVerificacao =
+      any_dadosSessao.HexVerificacao;
+    RespostaDoServidor_retorno.SessaoAtualizadaDTO_sessao.date_dataHoraUltimaAtualizacao =
+      any_dadosSessao.DataHoraUltimaAtualizacao;
+    RespostaDoServidor_retorno.SessaoAtualizadaDTO_sessao.RecursoPermitidoDTO_Array_listaRecursosPermitidos =
+      any_dadosSessao.ListaRecursosPermitidos.map((x) => {
+        let RecursoPermitidoDTO_recurso = new RecursoPermitidoDTO();
+        RecursoPermitidoDTO_recurso.int_id = x.Id;
+        RecursoPermitidoDTO_recurso.string_nome = x.Nome;
+        return RecursoPermitidoDTO_recurso;
+      });
+    RespostaDoServidor_retorno.DevolvidoMensagemDTO_corpo =
+      new DevolvidoMensagemDTO();
+    RespostaDoServidor_retorno.DevolvidoMensagemDTO_corpo.any_devolvido =
+      AxiosResponse_resposta.data.devolvido;
+    RespostaDoServidor_retorno.DevolvidoMensagemDTO_corpo.string_mensagem =
+      AxiosResponse_resposta.data.mensagem;
+    return RespostaDoServidor_retorno;
   }
 }

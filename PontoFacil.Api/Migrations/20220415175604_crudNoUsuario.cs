@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PontoFacil.Api.Migrations
 {
-    public partial class v1_crudNoUsuario_Inicial : Migration
+    public partial class crudNoUsuario : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -50,14 +50,12 @@ namespace PontoFacil.Api.Migrations
                 name: "Acesso",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     IdUsuario = table.Column<int>(type: "int", nullable: false),
                     IdRecurso = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Acesso", x => x.Id);
+                    table.PrimaryKey("PK_Acesso", x => new { x.IdRecurso, x.IdUsuario });
                     table.ForeignKey(
                         name: "FK_Acesso_Recurso_IdRecurso",
                         column: x => x.IdRecurso,
@@ -120,11 +118,6 @@ namespace PontoFacil.Api.Migrations
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Acesso_IdRecurso",
-                table: "Acesso",
-                column: "IdRecurso");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Acesso_IdUsuario",

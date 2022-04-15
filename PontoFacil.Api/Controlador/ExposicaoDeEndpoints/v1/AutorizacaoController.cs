@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoClienteParaServidor;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaCliente;
 using PontoFacil.Api.Controlador.Repositorio;
@@ -49,7 +50,10 @@ public class AutorizacaoController : ControllerBase
             Nome = x.Nome
         }).ToList();
 
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Devolvido = saida_sessaoAtualizada, Mensagem = Mensagens.SUCESSO });
+        string saida_jsonDadosSessao = JsonConvert.SerializeObject(saida_sessaoAtualizada);
+        this.HttpContext.Response.Headers["sessao"] = saida_jsonDadosSessao;
+
+        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Mensagem = Mensagens.SUCESSO });
     }
 
     [HttpPost]
@@ -59,7 +63,7 @@ public class AutorizacaoController : ControllerBase
         var saida_sessaoAtualizada = new SessaoAtualizadaDTO();
         if (string.IsNullOrWhiteSpace(usuarioComConta.Nome)
             || string.IsNullOrWhiteSpace(usuarioComConta.CPF)
-            || usuarioComConta.DataNascimento == null
+            || !usuarioComConta.DataNascimento.HasValue
             || string.IsNullOrWhiteSpace(usuarioComConta.Login)
             || string.IsNullOrWhiteSpace(usuarioComConta.Senha))
             return StatusCode(((int)HttpStatusCode.BadRequest), new DevolvidoMensagemDTO { Mensagem = Mensagens.ERRO_PARAMETROS_INVALIDOS });
@@ -85,11 +89,11 @@ public class AutorizacaoController : ControllerBase
         {
             var doSql_usuario = doSql_usuarios[0];
             if (_contaR.UsuarioTemConta(doSql_usuario.Id))
-                return StatusCode(((int)HttpStatusCode.BadRequest), new DevolvidoMensagemDTO { Mensagem = Mensagens.LOGIN_EM_USO });
+                return StatusCode(((int)HttpStatusCode.BadRequest), new DevolvidoMensagemDTO { Mensagem = Mensagens.ERRO_PESSOA_POSSUI_CONTA });
             else
                 doSql_novoUsuario = await _usuarioR.RegistrarContaDeUsuarioJaExistente(doSql_usuario.Id, inSql_usuario);
-            if (doSql_novoUsuario == null) return StatusCode((int)HttpStatusCode.InternalServerError);
         }
+        if (doSql_novoUsuario == null) return StatusCode((int)HttpStatusCode.InternalServerError);
         
         var doSql_novaSessao = await _sessaoAbertaR.AbrirSessaoDoUsuario(doSql_novoUsuario.Id);
         saida_sessaoAtualizada.Id = doSql_novaSessao.Id;
@@ -101,7 +105,10 @@ public class AutorizacaoController : ControllerBase
             Id = x.Id,
             Nome = x.Nome
         }).ToList();
+        
+        string saida_jsonDadosSessao = JsonConvert.SerializeObject(saida_sessaoAtualizada);
+        this.HttpContext.Response.Headers["sessao"] = saida_jsonDadosSessao;
 
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Devolvido = saida_sessaoAtualizada, Mensagem = Mensagens.SUCESSO });
+        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Mensagem = Mensagens.SUCESSO });
     }
 }

@@ -1,14 +1,14 @@
 export default class DevolvidoMensagemDTO {
-  get devolvido() {
+  get any_devolvido() {
     return this._devolvido;
   }
-  set devolvido(value) {
+  set any_devolvido(value) {
     this._devolvido = value;
   }
-  get mensagem() {
+  get string_mensagem() {
     return this._mensagem;
   }
-  set mensagem(value) {
+  set string_mensagem(value) {
     this._mensagem = value;
   }
 }

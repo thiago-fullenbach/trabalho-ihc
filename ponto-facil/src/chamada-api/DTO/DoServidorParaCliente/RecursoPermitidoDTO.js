@@ -1,14 +1,14 @@
 export default class RecursoPermitidoDTO {
-  get Id() {
-    return this._Id;
+  get int_id() {
+    return this._id;
   }
-  set Id(value) {
-    this._Id = value;
+  set int_id(value) {
+    this._id = value;
   }
-  get Nome() {
-    return this._Nome;
+  get string_nome() {
+    return this._nome;
   }
-  set Nome(value) {
-    this._Nome = value;
+  set string_nome(value) {
+    this._nome = value;
   }
 }

@@ -18,7 +18,7 @@ public class PontoFacilContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelB)
     {
         modelB.Entity<Acesso>(acesso => {
-            acesso.HasKey(x => x.Id);
+            acesso.HasKey(x => new { x.IdRecurso, x.IdUsuario } );
             acesso.HasOne(x => x.IdRecursoNavegacao)
                 .WithMany(y => y.AcessoMuitosNavegacao)
                 .HasForeignKey(x => x.IdRecurso);

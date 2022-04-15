@@ -38,7 +38,7 @@ public class UsuarioRepositorio
         {
             Nome = usuarioComConta.Nome,
             CPF = usuarioComConta.CPF,
-            DataNascimento = usuarioComConta.DataNascimento
+            DataNascimento = usuarioComConta.DataNascimento.Value
         };
         var inSql_conta = new Conta
         {
@@ -62,7 +62,7 @@ public class UsuarioRepositorio
 
         upSql_usuario.Nome = usuarioComConta.Nome;
         upSql_usuario.CPF = usuarioComConta.CPF;
-        upSql_usuario.DataNascimento = usuarioComConta.DataNascimento;
+        upSql_usuario.DataNascimento = usuarioComConta.DataNascimento.Value;
         var inSql_conta = new Conta
         {
             Login = usuarioComConta.Login,

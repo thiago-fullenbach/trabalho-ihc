@@ -5,10 +5,12 @@ import Main from "./components/View/Main";
 import { Routes, Route } from "react-router-dom";
 
 function App() {
+  const [sessao, setSessao] = React.useState({});
+
   return (
     <Routes>
-      <Route exact path="/main/*" element={<Main />}></Route>
-      <Route path="/" element={<Login />}></Route>
+      <Route exact path="/main/*" element={<Main seessaoTransf={sessao} setSessaoTransf={setSessao} />}></Route>
+      <Route path="/" element={<Login seessaoTransf={sessao} setSessaoTransf={setSessao} />}></Route>
     </Routes>
   )
 }

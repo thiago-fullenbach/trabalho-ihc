@@ -1,14 +1,14 @@
 export default class LoginXSenhaDTO {
-  get login() {
+  get string_login() {
     return this._login;
   }
-  set login(value) {
+  set string_login(value) {
     this._login = value;
   }
-  get senha() {
+  get string_senha() {
     return this._senha;
   }
-  set senha(value) {
+  set string_senha(value) {
     this._senha = value;
   }
 }

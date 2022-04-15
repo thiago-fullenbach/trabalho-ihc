@@ -1,6 +1,8 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Newtonsoft.Json;
+using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoClienteParaServidor;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaCliente;
 using PontoFacil.Api.Controlador.Repositorio;
 using PontoFacil.Api.Controlador.Repositorio.Comum;
@@ -11,23 +13,23 @@ public class AutorizarAttribute : ActionFilterAttribute
 {
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var sessaoAberta = context.HttpContext.RequestServices.GetService<SessaoAbertaRepositorio>();
-        if (sessaoAberta == null)
+        var sessaoAbertaR = context.HttpContext.RequestServices.GetService<SessaoAbertaRepositorio>();
+        var recursoR = context.HttpContext.RequestServices.GetService<RecursoRepositorio>();
+        if (sessaoAbertaR == null || recursoR == null)
         {
             context.Result = new ObjectResult((int)HttpStatusCode.InternalServerError);
             return;
         }
 
         // antes de ser consumido pelo endpoint
-        string headerSessaoIdGet = context.HttpContext.Request.Headers["identidadeSessao_Id"];
-        int headerSessaoId = int.Parse(headerSessaoIdGet);
-        string headerSessaoHexVerificacao = context.HttpContext.Request.Headers["identidadeSessao_HexVerificacao"];
-        
+        string jsonDadosSessao = context.HttpContext.Request.Headers["identidadeSessao"];
+        IdentidadeSessaoDTO dadosSessao = JsonConvert.DeserializeObject<IdentidadeSessaoDTO>(jsonDadosSessao) ?? new IdentidadeSessaoDTO();
+
         SessaoAberta? doSql_sessao = null;
         bool retornar = false;
         try
         {
-            doSql_sessao = await sessaoAberta.AtualizarSessao(headerSessaoId, headerSessaoHexVerificacao);
+            doSql_sessao = await sessaoAbertaR.AtualizarSessao(dadosSessao.Id, dadosSessao.HexVerificacao ?? string.Empty);
         }
         catch (RepositorioException ex)
         {
@@ -39,10 +41,19 @@ public class AutorizarAttribute : ActionFilterAttribute
         await next();
 
         // depois de ser consumido pelo endpoint
-        var doSql_sessaoAposRequisicao = await sessaoAberta.AtualizarSessao(doSql_sessao?.Id ?? 0, doSql_sessao?.HexVerificacao ?? string.Empty);
-        int doSql_sessaoId = doSql_sessaoAposRequisicao.Id;
-        string doSql_sessaoHexVerificacao = doSql_sessaoAposRequisicao?.HexVerificacao ?? string.Empty;
-        context.HttpContext.Response.Headers["identidadeSessao_Id"] = doSql_sessaoId.ToString();
-        context.HttpContext.Response.Headers["identidadeSessao_HexVerificacao"] = doSql_sessaoHexVerificacao;
+        var doSql_sessaoAposRequisicao = await sessaoAbertaR.AtualizarSessao(doSql_sessao?.Id ?? 0, doSql_sessao?.HexVerificacao ?? string.Empty);
+        
+        var saida_sessaoAtualizada = new SessaoAtualizadaDTO();
+        saida_sessaoAtualizada.Id = doSql_sessaoAposRequisicao.Id;
+        saida_sessaoAtualizada.HexVerificacao = doSql_sessaoAposRequisicao.HexVerificacao;
+        saida_sessaoAtualizada.DataHoraUltimaAtualizacao = doSql_sessaoAposRequisicao.DataHoraUltimaAtualizacao;
+        var doSql_recursosPermitidos = recursoR.ListarRecursosAcessadosPeloUsuario(doSql_sessaoAposRequisicao.IdUsuario);
+        saida_sessaoAtualizada.ListaRecursosPermitidos = doSql_recursosPermitidos.Select(x => new RecursoPermitidoDTO
+        {
+            Id = x.Id,
+            Nome = x.Nome
+        }).ToList();
+        string saida_jsonDadosSessao = JsonConvert.SerializeObject(saida_sessaoAtualizada);
+        context.HttpContext.Response.Headers["sessao"] = saida_jsonDadosSessao;
     }
 }
