@@ -1,0 +1,12 @@
+div.input-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 25px;
+}
+
+div.input-area label.label {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
