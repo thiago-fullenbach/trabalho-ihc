@@ -12,12 +12,13 @@ export default props => {
     const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')
     const [sessao, setSessao] = React.useState({});
+    const [usuarioLogado, setUsuarioLogado] = React.useState({});
 
     const handleSubmit = e => {
         e.preventDefault();
         console.log("Validar Usuário e Senha");
         (async () => {
-            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, userName, password);
+            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, setUsuarioLogado, userName, password);
             console.log(r);
             if (r.int_status == 404)
             {

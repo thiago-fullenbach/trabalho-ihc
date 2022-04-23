@@ -2,8 +2,9 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoClienteParaServidor;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaCliente;
-using PontoFacil.Api.Controlador.FilterComoMiddleware;
+using PontoFacil.Api.Controlador.Middleware;
 using PontoFacil.Api.Controlador.Repositorio;
+using PontoFacil.Api.Controlador.Repositorio.Convert.ConvertUnique;
 using PontoFacil.Api.Modelo;
 
 namespace PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1;
@@ -11,10 +12,12 @@ namespace PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1;
 [Route("api/v1/[controller]")]
 public class UsuarioController : ControllerBase
 {
-    UsuarioRepositorio _usuarioR;
-    public UsuarioController(UsuarioRepositorio usuarioR)
+    UsuariosRepositorio _usuariosRepositorio;
+    UsuarioConvertUnique _usuarioConvertUnique;
+    public UsuarioController(UsuariosRepositorio usuariosRepositorio, UsuarioConvertUnique usuarioConvertUnique)
     {
-        _usuarioR = usuarioR;
+        _usuariosRepositorio = usuariosRepositorio;
+        _usuarioConvertUnique = usuarioConvertUnique;
     }
 
     [Autorizar]
@@ -22,16 +25,11 @@ public class UsuarioController : ControllerBase
     [Route("listarTodos")]
     public IActionResult ListarTodos()
     {
-        var saida_resultadosPesquisa = new List<UsuarioPesquisadoDTO>();
-        var doSql_usuarios = _usuarioR.ObterUsuarioPeloFiltro(new FiltrarUsuarioDTO());
-        saida_resultadosPesquisa.AddRange(doSql_usuarios.Select(x => new UsuarioPesquisadoDTO
-        {
-            Id = x.Id,
-            Nome = x.Nome,
-            CPF = x.CPF,
-            DataNascimento = x.DataNascimento
-        }));
+        var listaUsuarios = _usuariosRepositorio.RecuperarUsuariosPeloFiltro(new FiltroUsuarioDTO());
+        var listaUsuariosEmDTO = new List<UsuarioPesquisadoDTO>();
+        foreach (var iUsuario in listaUsuarios)
+            { listaUsuariosEmDTO.Add(_usuarioConvertUnique.ParaUsuarioPesquisadoDTO(iUsuario)); }
         
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Devolvido = saida_resultadosPesquisa, Mensagem = Mensagens.SUCESSO });
+        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Devolvido = listaUsuariosEmDTO, Mensagem = Mensagens.REQUISICAO_SUCESSO });
     }
 }

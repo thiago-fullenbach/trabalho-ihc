@@ -1,5 +1,5 @@
 namespace PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaCliente;
-public class UsuarioPesquisadoDTO
+public class UsuarioLogadoDTO
 {
     public int Id { get; set; }
     public string Nome { get; set; }
@@ -7,4 +7,5 @@ public class UsuarioPesquisadoDTO
     public DateTime Data_nascimento { get; set; }
     public int Horas_diarias { get; set; }
     public string Login { get; set; }
+    public UsuarioRecursoDTO NavegacaoRecurso { get; set; }
 }
