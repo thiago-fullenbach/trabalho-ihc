@@ -40,5 +40,41 @@
       "Senha": "asolida",
       "id": 4
     }
+  ],
+  "presencas": [
+    {
+      "id": 1,
+      "tipoPresenca": "Entrada",
+      "horaPresenca": "8:00",
+      "dataPresenca": "2022-04-17",
+      "localPresenca": "Casa",
+      "status": "Pendente"
+    },
+    {
+      "id": 2,
+      "tipoPresenca": "Entrada",
+      "horaPresenca": "16:00",
+      "dataPresenca": "2022-04-16",
+      "localPresenca": "Casa",
+      "status": "Aprovado"
+    },
+    {
+      "id": 3,
+      "tipoPresenca": "Entrada",
+      "horaPresenca": "23:33",
+      "dataPresenca": "2022-04-17",
+      "localPresenca": "Casa",
+      "status": "Reprovado"
+    }
+  ],
+  "locais": [
+    {
+      "Apelido": "Casa",
+      "CEP": "02611001",
+      "Bairro": "Vila Nova Cachoeirinha",
+      "Logradouro": "Avenida Parada Pinto",
+      "Numero": "3524",
+      "id": 1
+    }
   ]
 }
