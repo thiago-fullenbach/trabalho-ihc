@@ -5,7 +5,7 @@ import CadUsuarioCadastreSeDTO from "./DTO/DoClienteParaServidor/CadUsuarioCadas
 
 class ApiUtil {
     static get string_urlApiV1() {
-        const string_urlDominioApi = "https://localhost:7120/api/v1";
+        const string_urlDominioApi = "http://localhost:5086/api/v1";
         return string_urlDominioApi;
     }
 
