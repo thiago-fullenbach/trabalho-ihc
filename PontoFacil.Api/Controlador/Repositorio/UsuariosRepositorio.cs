@@ -17,15 +17,18 @@ public class UsuariosRepositorio
 {
     private readonly PontoFacilContexto _contexto;
     private readonly CriptografiaServico _criptografiaServico;
+    private readonly ConfiguracoesServico _configuracoesServico;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
     private readonly RecursoConvertUnique _recursoConvertUnique;
     public UsuariosRepositorio(PontoFacilContexto contexto,
                                CriptografiaServico criptografiaServico,
+                               ConfiguracoesServico configuracoesServico,
                                UsuarioConvertUnique usuarioConvertUnique,
                                RecursoConvertUnique recursoConvertUnique)
     {
         _contexto = contexto;
         _criptografiaServico = criptografiaServico;
+        _configuracoesServico = configuracoesServico;
         _usuarioConvertUnique = usuarioConvertUnique;
         _recursoConvertUnique = recursoConvertUnique;
     }
@@ -56,6 +59,37 @@ public class UsuariosRepositorio
         await _contexto.Recursos.AddAsync(inclRecurso);
         await _contexto.SaveChangesAsync();
         return inclUsuario;
+    }
+    public async Task<Usuarios> TornaAdministrador(int idUsuario)
+    {
+        var recursoUsuario = _contexto.Recursos.First(x => x.usuarios_id == idUsuario);
+        TornaAdministradorPropriedades(recursoUsuario);
+        _contexto.Recursos.Update(recursoUsuario);
+        await _contexto.SaveChangesAsync();
+        return _contexto.Usuarios.AsNoTracking().First(x => x.id == idUsuario);
+    }
+    public void TornaAdministradorPropriedades(Recursos recurso)
+    {
+        var propertiesRecursos = typeof(Recursos).GetProperties();
+        var propertiesPermissao = propertiesRecursos.Where(x => x.Name.Contains("pode_"));
+        foreach (var iProp in propertiesPermissao)
+            { iProp.SetValue(recurso, true); }
+    }
+    public void AutorizaUsuario(UsuarioLogadoDTO usuario, Func<UsuarioRecursoDTO, bool?> propertyRecurso)
+    {
+        bool? autorizado = propertyRecurso(usuario.NavegacaoRecurso);
+        var mensagens = new List<string>();
+        if (!(autorizado) ?? true)
+            { mensagens.Add(Mensagens.ACESSO_NEGADO); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.Unauthorized);
+    }
+    public void AutorizaUsuarioImportarExportar(UsuarioLogadoDTO usuario)
+    {
+        bool autorizado = usuario.CPF == _configuracoesServico.UsuarioImportarExportar.CPF;
+        var mensagens = new List<string>();
+        if (!(autorizado))
+            { mensagens.Add(Mensagens.ACESSO_NEGADO); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.Unauthorized);
     }
     public IList<Usuarios> RecuperarUsuariosPeloFiltro(FiltroUsuarioDTO filtro)
     {

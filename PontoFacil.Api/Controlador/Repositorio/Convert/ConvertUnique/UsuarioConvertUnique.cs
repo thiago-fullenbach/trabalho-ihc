@@ -1,3 +1,5 @@
+using System.Net;
+using Newtonsoft.Json;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoClienteParaServidor;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaCliente;
 using PontoFacil.Api.Controlador.Repositorio.Comum;
@@ -75,5 +77,24 @@ public class UsuarioConvertUnique
             Login = usuario.login
         };
         return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
+    }
+    public UsuarioLogadoDTO ExtrairUsuarioLogado(IHeaderDictionary headers)
+    {
+        var mensagens = new List<string>();
+        if (!headers.ContainsKey("usuario"))
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Usuário logado", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+
+        var usuarioJson = headers["usuario"];
+        if (string.IsNullOrWhiteSpace(usuarioJson))
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Usuário logado", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+
+        var usuario = JsonConvert.DeserializeObject<UsuarioLogadoDTO>(usuarioJson);
+        if (usuario == null)
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Usuário logado", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+
+        return Utilitarios.DevolverComNovoEspacoNaMemoria(usuario);
     }
 }

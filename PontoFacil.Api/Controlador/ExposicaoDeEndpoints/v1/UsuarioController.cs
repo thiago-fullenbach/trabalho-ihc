@@ -12,8 +12,8 @@ namespace PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1;
 [Route("api/v1/[controller]")]
 public class UsuarioController : ControllerBase
 {
-    UsuariosRepositorio _usuariosRepositorio;
-    UsuarioConvertUnique _usuarioConvertUnique;
+    private readonly UsuariosRepositorio _usuariosRepositorio;
+    private readonly UsuarioConvertUnique _usuarioConvertUnique;
     public UsuarioController(UsuariosRepositorio usuariosRepositorio, UsuarioConvertUnique usuarioConvertUnique)
     {
         _usuariosRepositorio = usuariosRepositorio;
@@ -25,6 +25,9 @@ public class UsuarioController : ControllerBase
     [Route("listarTodos")]
     public IActionResult ListarTodos()
     {
+        // var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
+        // _usuariosRepositorio.AutorizaUsuario(usuarioLogado, x => x.Pode_vis_demais_usuarios);
+
         var listaUsuarios = _usuariosRepositorio.RecuperarUsuariosPeloFiltro(new FiltroUsuarioDTO());
         var listaUsuariosEmDTO = new List<UsuarioPesquisadoDTO>();
         foreach (var iUsuario in listaUsuarios)

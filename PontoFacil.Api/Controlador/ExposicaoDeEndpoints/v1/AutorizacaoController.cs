@@ -17,19 +17,22 @@ namespace PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1;
 [Route("api/v1/[controller]")]
 public class AutorizacaoController : ControllerBase
 {
-    UsuariosRepositorio _usuariosRepositorio;
-    SessoesRepositorio _sessoesRepositorio;
-    UsuarioConvert _usuarioConvert;
-    UsuarioConvertUnique _usuarioConvertUnique;
-    PontoFacilContexto _contexto;
+    private readonly UsuariosRepositorio _usuariosRepositorio;
+    private readonly SessoesRepositorio _sessoesRepositorio;
+    private readonly SessaoConvertUnique _sessaoConvertUnique;
+    private readonly UsuarioConvert _usuarioConvert;
+    private readonly UsuarioConvertUnique _usuarioConvertUnique;
+    private readonly PontoFacilContexto _contexto;
     public AutorizacaoController(UsuariosRepositorio usuariosRepositorio,
                                  SessoesRepositorio sessoesRepositorio,
+                                 SessaoConvertUnique sessaoConvertUnique,
                                  UsuarioConvert usuarioConvert,
                                  UsuarioConvertUnique usuarioConvertUnique,
                                  PontoFacilContexto contexto)
     {
         _usuariosRepositorio = usuariosRepositorio;
         _sessoesRepositorio = sessoesRepositorio;
+        _sessaoConvertUnique = sessaoConvertUnique;
         _usuarioConvert = usuarioConvert;
         _usuarioConvertUnique = usuarioConvertUnique;
         _contexto = contexto;
@@ -43,8 +46,9 @@ public class AutorizacaoController : ControllerBase
 
         var usuario = _usuariosRepositorio.RecuperarUsuarioPeloLoginSenha(loginXSenha);
         var sessao = await _sessoesRepositorio.AbrirSessao(usuario.id);
+        var asEnviarPeloHeader = _sessaoConvertUnique.ParaSessaoEnviarPeloHeaderDTO(sessao);
         var detalhesUsuario = _usuarioConvert.ParaUsuarioLogadoDTO(usuario);
-        HttpContext.Response.Headers["sessao"] = JsonConvert.SerializeObject(sessao);
+        HttpContext.Response.Headers["sessao"] = JsonConvert.SerializeObject(asEnviarPeloHeader);
         HttpContext.Response.Headers["usuario"] = JsonConvert.SerializeObject(detalhesUsuario);
         return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Mensagem = Mensagens.REQUISICAO_SUCESSO });
     }
@@ -57,8 +61,9 @@ public class AutorizacaoController : ControllerBase
 
         var usuario = await _usuariosRepositorio.CriarUsuarioPeloCadastreSe(cadUsuario);
         var sessao = await _sessoesRepositorio.AbrirSessao(usuario.id);
+        var asEnviarPeloHeader = _sessaoConvertUnique.ParaSessaoEnviarPeloHeaderDTO(sessao);
         var detalhesUsuario = _usuarioConvert.ParaUsuarioLogadoDTO(usuario);
-        HttpContext.Response.Headers["sessao"] = JsonConvert.SerializeObject(sessao);
+        HttpContext.Response.Headers["sessao"] = JsonConvert.SerializeObject(asEnviarPeloHeader);
         HttpContext.Response.Headers["usuario"] = JsonConvert.SerializeObject(detalhesUsuario);
         return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Mensagem = Mensagens.REQUISICAO_SUCESSO });
     }

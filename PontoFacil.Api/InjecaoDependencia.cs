@@ -15,6 +15,13 @@ public static class InjecaoDependencia
         });
         return services;
     }
+    public static IServiceCollection AdicionarContextoDeConexaoInMemory(this IServiceCollection services)
+    {
+        services.AddDbContext<PontoFacilContexto>(options => {
+            options.UseInMemoryDatabase("pontofacil_inmemorydb");
+        });
+        return services;
+    }
     public static IServiceCollection AdicionarBibliotecaDeServicos(this IServiceCollection services)
     {
         services.AddScoped<ConfiguracoesServico>();
@@ -37,6 +44,7 @@ public static class InjecaoDependencia
     {
         services.AddScoped<UsuariosRepositorio>();
         services.AddScoped<SessoesRepositorio>();
+        services.AddScoped<DatabaseRepositorio>();
         return services;
     }
 }
