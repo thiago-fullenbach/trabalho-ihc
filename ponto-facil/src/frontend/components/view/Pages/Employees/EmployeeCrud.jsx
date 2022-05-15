@@ -1,4 +1,4 @@
-import { faTrash, faPencil, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPencil, faUsers, faClipboard } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 import React from "react";
 import Main from "../../../templates/Main/Main";
@@ -20,6 +20,8 @@ const initialState = {
         SobrenomeFuncionario: "",
         RG: "",
         CPF: "",
+        Login: "",
+        Senha: "",
         DataNascimento: ""
     },
     list:[],
@@ -158,6 +160,30 @@ export default class EmployeeCrud extends React.Component {
 
                             <div className="input-group row">
                                 <div className="input col-6">
+                                    <label>Login</label>
+                                    <input type="text"
+                                        className="form-control" 
+                                        name="Login"
+                                        value={this.state.user.Login}
+                                        onChange={e => this.updateField(e)}
+                                        placeholder="Digite o login..."
+                                        disabled={disabled}/>
+                                </div>
+
+                                <div className="input col-6">
+                                        <label>Senha</label>
+                                        <input type="text"
+                                            className="form-control" 
+                                            name="Senha"
+                                            value={this.state.user.Senha}
+                                            onChange={e => this.updateField(e)}
+                                            placeholder="Digite a senha..."
+                                            disabled={disabled}/>
+                                </div>
+                            </div>
+
+                            <div className="input-group row">
+                                <div className="input col-6">
                                         <label>Data de Nascimento</label>
                                         <input type="date"
                                             className="form-control" 
@@ -209,7 +235,7 @@ export default class EmployeeCrud extends React.Component {
                     "Nome", 
                     "Sobrenome", 
                     "RG", 
-                    "CPF", 
+                    "CPF",
                     "Data de Nascimento"
                 ]
             }>
@@ -236,6 +262,10 @@ export default class EmployeeCrud extends React.Component {
                         <button className="btn btn-danger ms-2"
                             onClick={() => this.remove(user)}>
                             <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                        <button className="btn btn-primary ms-2"
+                            onClick={() => this.remove(user)}>
+                            <FontAwesomeIcon icon={faClipboard} />
                         </button>
                     </td>
                 </tr>

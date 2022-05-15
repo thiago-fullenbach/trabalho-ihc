@@ -3,7 +3,7 @@ import React from "react";
 
 export default props => {
     return (
-        <table className="table mt4">
+        <table className="table table-responsive mt4">
             <thead>
                 <tr>
                     {props.headings.map((heading, index) => <th key={index}>{heading}</th>)}
