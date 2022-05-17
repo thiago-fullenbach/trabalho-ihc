@@ -5,7 +5,7 @@ import CadUsuarioCadastreSeDTO from "./DTO/DoClienteParaServidor/CadUsuarioCadas
 
 class ApiUtil {
     static get string_urlApiV1() {
-        const string_urlDominioApi = "http://localhost:5086/api/v1";
+        const string_urlDominioApi = location.hostname === 'ihc-n-ponto-facil.herokuapp.com' ? "https://ihc-n-ponto-facil-api.herokuapp.com/api/v1" : "http://localhost:5086/api/v1";
         return string_urlDominioApi;
     }
 

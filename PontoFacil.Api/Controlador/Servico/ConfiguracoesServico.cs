@@ -18,7 +18,7 @@ public class ConfiguracoesServico
     public ConfiguracoesServico(IConfiguration configuration)
     {
         _configuration = configuration;
-        Segredo = _configuration["Autorizacao:Segredo"];
+        Segredo = _configuration[ConfiguracoesServico.ChaveSegredoHashHmacsha512];
         int segs;
         segs = int.Parse(_configuration["Autorizacao:Sessao:SegundosAteExpirar"]);
         TempoExpirarSessao = TimeSpan.FromSeconds(segs);
@@ -38,7 +38,7 @@ public class ConfiguracoesServico
             Data_nascimento = DateTime.ParseExact(_configuration["UsuarioImportarExportar:DataNascimento"], format: "yyyy-MM-dd", null),
             Horas_diarias = int.Parse(_configuration["UsuarioImportarExportar:HorasDiarias"]),
             Login = _configuration["UsuarioImportarExportar:Login"],
-            Senha = _configuration["UsuarioImportarExportar:SenhaCrua"]
+            Senha = _configuration[ConfiguracoesServico.ChaveSenhaUsuarioImportarExportar]
         };
         UsuarioAdminRaiz = new CadUsuarioCadastreSeDTO
         {
@@ -47,7 +47,12 @@ public class ConfiguracoesServico
             Data_nascimento = DateTime.ParseExact(_configuration["UsuarioAdminRaiz:DataNascimento"], format: "yyyy-MM-dd", null),
             Horas_diarias = int.Parse(_configuration["UsuarioAdminRaiz:HorasDiarias"]),
             Login = _configuration["UsuarioAdminRaiz:Login"],
-            Senha = _configuration["UsuarioAdminRaiz:SenhaCrua"]
+            Senha = _configuration[ConfiguracoesServico.ChaveSenhaAdministradorRaiz]
         };
     }
+    public static readonly string ChaveSegredoHashHmacsha512 = "SEGREDO_HASH_HMACSHA512";
+    public static readonly string ChaveConexaoBancoDadosRelacional = "CONEXAO_BANCO_DADOS_RELACIONAL";
+    public static readonly string ChaveSenhaUsuarioImportarExportar = "SENHA_USUARIO_IMPORTAR_EXPORTAR";
+    public static readonly string ChaveSenhaAdministradorRaiz = "SENHA_ADMINISTRADOR_RAIZ";
+    public static bool EhBancoDadosRelacional(ConfigurationManager configuration) => configuration["BancoDadosRelacional"] == "S";
 }

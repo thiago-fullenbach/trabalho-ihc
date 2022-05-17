@@ -15,13 +15,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-bool ehBancoDadosRelacional = builder.Configuration["BancoDadosRelacional"] == "S";
-if (ehBancoDadosRelacional)
-{
-    string conexao_mariaDb = builder.Configuration.GetConnectionString("MariaDb");
-    builder.Services.AdicionarContextoDeConexaoMySql(conexao_mariaDb);
-}
-else { builder.Services.AdicionarContextoDeConexaoInMemory(); }
+
+builder.AdicionarContextoDeConexao();
 builder.Services.AdicionarBibliotecaDeServicos();
 builder.Services.AdicionarBibliotecaDeConversoesUnicas();
 builder.Services.AdicionarBibliotecaDeConversoes();
@@ -39,10 +34,7 @@ builder.Services.AddCors(options =>
                       });
 });
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-builder.WebHost.UseKestrel()
-    .UseUrls("http://*:5086") //Add this line
-    .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseIISIntegration();
+builder.ExporUrlsForaContainer();
 
 var app = builder.Build();
 
@@ -63,17 +55,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-var services = app.Services.CreateScope().ServiceProvider;
-if (ehBancoDadosRelacional) {
-    var contexto = services.GetService<PontoFacilContexto>();
-    await contexto.Database.MigrateAsync();
-}
-var configServico = services.GetService<ConfiguracoesServico>();
-await GerenciadorAgendamento.Instancia(configServico);
-ParametrosBatchExclusaoSessoes.UrlsServidor = new List<string>(builder.WebHost.GetSetting(WebHostDefaults.ServerUrlsKey).Replace("*", "localhost").Split(';'));
-var usuariosRepositorio = services.GetService<UsuariosRepositorio>();
-await usuariosRepositorio.CriarUsuarioPeloCadastreSe(configServico.UsuarioImportarExportar);
-var adminRaiz = await usuariosRepositorio.CriarUsuarioPeloCadastreSe(configServico.UsuarioAdminRaiz);
-await usuariosRepositorio.TornaAdministrador(adminRaiz.id);
+var processador = new PrimeirasExecucoes(builder, app);
+await processador.MigraBancoDadosSeRelacionalAsync();
+await processador.CarregaBatchExclusaoSessoesAsync();
+await processador.CarregaDadosIniciaisAsync();
 
 app.Run();

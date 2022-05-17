@@ -8,6 +8,16 @@ using PontoFacil.Api.Modelo.Contexto;
 namespace PontoFacil.Api;
 public static class InjecaoDependencia
 {
+    public static WebApplicationBuilder AdicionarContextoDeConexao(this WebApplicationBuilder builder)
+    {
+        if (ConfiguracoesServico.EhBancoDadosRelacional(builder.Configuration))
+        {
+            string conexao_mariaDb = builder.Configuration[ConfiguracoesServico.ChaveConexaoBancoDadosRelacional];
+            builder.Services.AdicionarContextoDeConexaoMySql(conexao_mariaDb);
+        }
+        else { builder.Services.AdicionarContextoDeConexaoInMemory(); }
+        return builder;
+    }
     public static IServiceCollection AdicionarContextoDeConexaoMySql(this IServiceCollection services, string conexao)
     {
         services.AddDbContext<PontoFacilContexto>(options => {
