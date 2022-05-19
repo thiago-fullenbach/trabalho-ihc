@@ -33,7 +33,7 @@ public class UsuarioController : ControllerBase
         foreach (var iUsuario in listaUsuarios)
             { listaUsuariosEmDTO.Add(_usuarioConvertUnique.ParaUsuarioPesquisadoDTO(iUsuario)); }
         
-        var json = new DevolvidoMensagensDTO { Devolvido = listaUsuarios };
+        var json = new DevolvidoMensagensDTO { Devolvido = listaUsuariosEmDTO };
         json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
         return StatusCode((int)HttpStatusCode.OK, json);
     }
