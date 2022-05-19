@@ -13,14 +13,14 @@ public class PrimeirasExecucoes
         _app = app;
         _serviceProvider = app.Services.CreateScope().ServiceProvider;
         _configServico = _serviceProvider.GetService<ConfiguracoesServico>();
-        _usuariosRepositorio = _serviceProvider.GetService<UsuariosRepositorio>();
+        _usuarioRepositorio = _serviceProvider.GetService<UsuarioRepositorio>();
         _ehBancoDadosRelacional = builder.Configuration["BancoDadosRelacional"] == "S";
     }
     private readonly WebApplicationBuilder _builder;
     private readonly WebApplication _app;
     private readonly IServiceProvider _serviceProvider;
     private readonly ConfiguracoesServico _configServico;
-    private readonly UsuariosRepositorio _usuariosRepositorio;
+    private readonly UsuarioRepositorio _usuarioRepositorio;
     private readonly bool _ehBancoDadosRelacional;
     public async Task MigraBancoDadosSeRelacionalAsync()
     {
@@ -37,8 +37,8 @@ public class PrimeirasExecucoes
     }
     public async Task CarregaDadosIniciaisAsync()
     {
-        await _usuariosRepositorio.CriarUsuarioPeloCadastreSe(_configServico.UsuarioImportarExportar);
-        var adminRaiz = await _usuariosRepositorio.CriarUsuarioPeloCadastreSe(_configServico.UsuarioAdminRaiz);
-        await _usuariosRepositorio.TornaAdministrador(adminRaiz.id);
+        await _usuarioRepositorio.CriarUsuarioPeloCadastreSe(_configServico.UsuarioImportarExportar);
+        var adminRaiz = await _usuarioRepositorio.CriarUsuarioPeloCadastreSe(_configServico.UsuarioAdminRaiz);
+        await _usuarioRepositorio.TornaAdministrador(adminRaiz.id);
     }
 }

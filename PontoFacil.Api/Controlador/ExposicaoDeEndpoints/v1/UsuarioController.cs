@@ -12,11 +12,11 @@ namespace PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1;
 [Route("api/v1/[controller]")]
 public class UsuarioController : ControllerBase
 {
-    private readonly UsuariosRepositorio _usuariosRepositorio;
+    private readonly UsuarioRepositorio _usuarioRepositorio;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
-    public UsuarioController(UsuariosRepositorio usuariosRepositorio, UsuarioConvertUnique usuarioConvertUnique)
+    public UsuarioController(UsuarioRepositorio usuarioRepositorio, UsuarioConvertUnique usuarioConvertUnique)
     {
-        _usuariosRepositorio = usuariosRepositorio;
+        _usuarioRepositorio = usuarioRepositorio;
         _usuarioConvertUnique = usuarioConvertUnique;
     }
 
@@ -28,11 +28,13 @@ public class UsuarioController : ControllerBase
         // var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
         // _usuariosRepositorio.AutorizaUsuario(usuarioLogado, x => x.Pode_vis_demais_usuarios);
 
-        var listaUsuarios = _usuariosRepositorio.RecuperarUsuariosPeloFiltro(new FiltroUsuarioDTO());
+        var listaUsuarios = _usuarioRepositorio.RecuperarUsuariosPeloFiltro(new FiltroUsuarioDTO());
         var listaUsuariosEmDTO = new List<UsuarioPesquisadoDTO>();
         foreach (var iUsuario in listaUsuarios)
             { listaUsuariosEmDTO.Add(_usuarioConvertUnique.ParaUsuarioPesquisadoDTO(iUsuario)); }
         
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Devolvido = listaUsuariosEmDTO, Mensagem = Mensagens.REQUISICAO_SUCESSO });
+        var json = new DevolvidoMensagensDTO();
+        json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
+        return StatusCode((int)HttpStatusCode.OK, json);
     }
 }

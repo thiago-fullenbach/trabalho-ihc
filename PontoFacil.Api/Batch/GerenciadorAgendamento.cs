@@ -40,7 +40,7 @@ public class GerenciadorAgendamento
     private ISchedulerFactory _schedulerFactory;
     private IScheduler _scheduler;
     private IJobDetail _batchExclusaoSessoesJob;
-    public async Task DefineProximoBatchExclusaoSessoes(IEnumerable<Sessoes> sessoes, ConfiguracoesServico configuracoesServico)
+    public async Task DefineProximoBatchExclusaoSessoes(IEnumerable<Sessao> sessoes, ConfiguracoesServico configuracoesServico)
     {
         DateTime? sessoesDatahoraProximaColeta = null;
         if (sessoes.Count() > 0)
@@ -52,7 +52,7 @@ public class GerenciadorAgendamento
             { sessoesDatahoraProximaColeta = GerenciadorAgendamento.CalcularDataHoraExclusaoAposInatividade(configuracoesServico); }
         await ReagendarBatchExclusaoSessoesPara(sessoesDatahoraProximaColeta.Value);
     }
-    public static DateTime CalcularDatahoraExclusao(Sessoes sessao, ConfiguracoesServico configuracoesServico)
+    public static DateTime CalcularDatahoraExclusao(Sessao sessao, ConfiguracoesServico configuracoesServico)
     {
         return (sessao.datahora_ultima_autenticacao + configuracoesServico.TempoExpirarSessao) + TimeSpan.FromSeconds(1);
     }

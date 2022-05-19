@@ -13,26 +13,26 @@ using PontoFacil.Api.Modelo.Contexto;
 using Valida.CPF.CNPJ;
 
 namespace PontoFacil.Api.Controlador.Repositorio;
-public class UsuariosRepositorio
+public class UsuarioRepositorio
 {
     private readonly PontoFacilContexto _contexto;
     private readonly CriptografiaServico _criptografiaServico;
     private readonly ConfiguracoesServico _configuracoesServico;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
-    private readonly RecursoConvertUnique _recursoConvertUnique;
-    public UsuariosRepositorio(PontoFacilContexto contexto,
+    private readonly AcessoConvertUnique _acessoConvertUnique;
+    public UsuarioRepositorio(PontoFacilContexto contexto,
                                CriptografiaServico criptografiaServico,
                                ConfiguracoesServico configuracoesServico,
                                UsuarioConvertUnique usuarioConvertUnique,
-                               RecursoConvertUnique recursoConvertUnique)
+                               AcessoConvertUnique acessoConvertUnique)
     {
         _contexto = contexto;
         _criptografiaServico = criptografiaServico;
         _configuracoesServico = configuracoesServico;
         _usuarioConvertUnique = usuarioConvertUnique;
-        _recursoConvertUnique = recursoConvertUnique;
+        _acessoConvertUnique = acessoConvertUnique;
     }
-    public Usuarios RecuperarUsuarioPeloLoginSenha(LoginXSenhaDTO loginSenha)
+    public Usuario RecuperarUsuarioPeloLoginSenha(LoginXSenhaDTO loginSenha)
     {
         string senhaHasheada = _criptografiaServico.HashearSenha(loginSenha.Senha);
         var usuario = _contexto.Usuarios
@@ -46,40 +46,43 @@ public class UsuariosRepositorio
 
         return usuario;
     }
-    public async Task<Usuarios> CriarUsuarioPeloCadastreSe(CadUsuarioCadastreSeDTO cadUsuario)
+    public async Task<Usuario> CriarUsuarioPeloCadastreSe(CadUsuarioCadastreSeDTO cadUsuario)
     {
-        var inclUsuario = _usuarioConvertUnique.ParaUsuarios(cadUsuario);
+        var inclUsuario = _usuarioConvertUnique.ParaUsuario(cadUsuario);
         var dataAgr = DateTime.Now;
         inclUsuario.datahora_criacao = dataAgr;
-        var recursoPadrao = RecursoConvertUnique.RecursoPadrao;
-        var inclRecurso = _recursoConvertUnique.ParaRecursos(recursoPadrao);
-        inclRecurso.datahora_criacao = dataAgr;
-        inclRecurso.NavegacaoUsuarios = inclUsuario;
+        var acessosPadrao = AcessoConvertUnique.AcessosPadrao;
+        var inclListaAcessos = new List<Acesso>();
+        foreach (var iAcessoPadrao in acessosPadrao)
+        {
+            var acessoAdd = _acessoConvertUnique.ParaAcesso(iAcessoPadrao);
+            acessoAdd.NavegacaoUsuario = inclUsuario;
+            acessoAdd.datahora_criacao = dataAgr;
+            inclListaAcessos.Add(acessoAdd);
+        }
         await _contexto.Usuarios.AddAsync(inclUsuario);
-        await _contexto.Recursos.AddAsync(inclRecurso);
+        await _contexto.Acessos.AddRangeAsync(inclListaAcessos);
         await _contexto.SaveChangesAsync();
         return inclUsuario;
     }
-    public async Task<Usuarios> TornaAdministrador(int idUsuario)
+    public async Task<Usuario> TornaAdministrador(int idUsuario)
     {
-        var recursoUsuario = _contexto.Recursos.First(x => x.usuarios_id == idUsuario);
-        TornaAdministradorPropriedades(recursoUsuario);
-        _contexto.Recursos.Update(recursoUsuario);
+        var acessosUsuario = _contexto.Acessos.Where(x => x.usuario_id == idUsuario);
+        foreach (var iAcesso in acessosUsuario)
+        {
+            iAcesso.eh_habilitado = true;
+            iAcesso.datahora_modificacao = DateTime.Now;
+        }
+        _contexto.Acessos.UpdateRange(acessosUsuario);
         await _contexto.SaveChangesAsync();
         return _contexto.Usuarios.AsNoTracking().First(x => x.id == idUsuario);
     }
-    public void TornaAdministradorPropriedades(Recursos recurso)
+    public void AutorizaUsuario(UsuarioLogadoDTO usuario, int recursoCodEn)
     {
-        var propertiesRecursos = typeof(Recursos).GetProperties();
-        var propertiesPermissao = propertiesRecursos.Where(x => x.Name.Contains("pode_"));
-        foreach (var iProp in propertiesPermissao)
-            { iProp.SetValue(recurso, true); }
-    }
-    public void AutorizaUsuario(UsuarioLogadoDTO usuario, Func<UsuarioRecursoDTO, bool?> propertyRecurso)
-    {
-        bool? autorizado = propertyRecurso(usuario.NavegacaoRecurso);
+        var acessoUsuario = _contexto.Acessos.First(x => x.usuario_id == usuario.Id && x.recurso_cod_en == recursoCodEn);
+        bool autorizado = acessoUsuario.eh_habilitado ?? false;
         var mensagens = new List<string>();
-        if (!(autorizado) ?? true)
+        if (!autorizado)
             { mensagens.Add(Mensagens.ACESSO_NEGADO); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.Unauthorized);
     }
@@ -91,7 +94,7 @@ public class UsuariosRepositorio
             { mensagens.Add(Mensagens.ACESSO_NEGADO); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.Unauthorized);
     }
-    public IList<Usuarios> RecuperarUsuariosPeloFiltro(FiltroUsuarioDTO filtro)
+    public IList<Usuario> RecuperarUsuariosPeloFiltro(FiltroUsuarioDTO filtro)
     {
         var usuarios = _contexto.Usuarios
             .AsNoTracking()

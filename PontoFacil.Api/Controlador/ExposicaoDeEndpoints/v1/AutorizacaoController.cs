@@ -17,21 +17,21 @@ namespace PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1;
 [Route("api/v1/[controller]")]
 public class AutorizacaoController : ControllerBase
 {
-    private readonly UsuariosRepositorio _usuariosRepositorio;
-    private readonly SessoesRepositorio _sessoesRepositorio;
+    private readonly UsuarioRepositorio _usuarioRepositorio;
+    private readonly SessaoRepositorio _sessaoRepositorio;
     private readonly SessaoConvertUnique _sessaoConvertUnique;
     private readonly UsuarioConvert _usuarioConvert;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
     private readonly PontoFacilContexto _contexto;
-    public AutorizacaoController(UsuariosRepositorio usuariosRepositorio,
-                                 SessoesRepositorio sessoesRepositorio,
+    public AutorizacaoController(UsuarioRepositorio usuarioRepositorio,
+                                 SessaoRepositorio sessaoRepositorio,
                                  SessaoConvertUnique sessaoConvertUnique,
                                  UsuarioConvert usuarioConvert,
                                  UsuarioConvertUnique usuarioConvertUnique,
                                  PontoFacilContexto contexto)
     {
-        _usuariosRepositorio = usuariosRepositorio;
-        _sessoesRepositorio = sessoesRepositorio;
+        _usuarioRepositorio = usuarioRepositorio;
+        _sessaoRepositorio = sessaoRepositorio;
         _sessaoConvertUnique = sessaoConvertUnique;
         _usuarioConvert = usuarioConvert;
         _usuarioConvertUnique = usuarioConvertUnique;
@@ -42,30 +42,34 @@ public class AutorizacaoController : ControllerBase
     [Route("login")]
     public async Task<IActionResult> Login([FromBody]LoginXSenhaDTO loginXSenha)
     {
-        _usuariosRepositorio.ValidarLoginSenhaObrigatorios(loginXSenha);
+        _usuarioRepositorio.ValidarLoginSenhaObrigatorios(loginXSenha);
 
-        var usuario = _usuariosRepositorio.RecuperarUsuarioPeloLoginSenha(loginXSenha);
-        var sessao = await _sessoesRepositorio.AbrirSessao(usuario.id);
-        var asEnviarPeloHeader = _sessaoConvertUnique.ParaSessaoEnviarPeloHeaderDTO(sessao);
+        var usuario = _usuarioRepositorio.RecuperarUsuarioPeloLoginSenha(loginXSenha);
+        var sessao = await _sessaoRepositorio.AbrirSessao(usuario.id);
+        var asEnviarPeloHeader = _sessaoConvertUnique.ParaSessaoEnvioHeaderDTO(sessao);
         var detalhesUsuario = _usuarioConvert.ParaUsuarioLogadoDTO(usuario);
         HttpContext.Response.Headers["sessao"] = JsonConvert.SerializeObject(asEnviarPeloHeader);
         HttpContext.Response.Headers["usuario"] = JsonConvert.SerializeObject(detalhesUsuario);
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Mensagem = Mensagens.REQUISICAO_SUCESSO });
+        var json = new DevolvidoMensagensDTO();
+        json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
+        return StatusCode((int)HttpStatusCode.OK, json);
     }
 
     [HttpPost]
     [Route("registrar")]
     public async Task<IActionResult> Registrar([FromBody]CadUsuarioCadastreSeDTO cadUsuario)
     {
-        _usuariosRepositorio.ValidarCadastreSe(cadUsuario);
+        _usuarioRepositorio.ValidarCadastreSe(cadUsuario);
 
-        var usuario = await _usuariosRepositorio.CriarUsuarioPeloCadastreSe(cadUsuario);
-        var sessao = await _sessoesRepositorio.AbrirSessao(usuario.id);
-        var asEnviarPeloHeader = _sessaoConvertUnique.ParaSessaoEnviarPeloHeaderDTO(sessao);
+        var usuario = await _usuarioRepositorio.CriarUsuarioPeloCadastreSe(cadUsuario);
+        var sessao = await _sessaoRepositorio.AbrirSessao(usuario.id);
+        var asEnviarPeloHeader = _sessaoConvertUnique.ParaSessaoEnvioHeaderDTO(sessao);
         var detalhesUsuario = _usuarioConvert.ParaUsuarioLogadoDTO(usuario);
         HttpContext.Response.Headers["sessao"] = JsonConvert.SerializeObject(asEnviarPeloHeader);
         HttpContext.Response.Headers["usuario"] = JsonConvert.SerializeObject(detalhesUsuario);
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Mensagem = Mensagens.REQUISICAO_SUCESSO });
+        var json = new DevolvidoMensagensDTO();
+        json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
+        return StatusCode((int)HttpStatusCode.OK, json);
     }
 
     [BatchExclusaoSessoes]
@@ -73,7 +77,9 @@ public class AutorizacaoController : ControllerBase
     [Route("excluirSessoesExpiradas")]
     public async Task<IActionResult> ExcluirSessoesExpiradas()
     {
-        await _sessoesRepositorio.ExcluirSessoesExpiradas();
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Mensagem = Mensagens.REQUISICAO_SUCESSO });
+        await _sessaoRepositorio.ExcluirSessoesExpiradas();
+        var json = new DevolvidoMensagensDTO();
+        json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
+        return StatusCode((int)HttpStatusCode.OK, json);
     }
 }

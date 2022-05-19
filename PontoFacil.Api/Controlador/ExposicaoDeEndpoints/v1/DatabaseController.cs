@@ -13,14 +13,14 @@ public class DatabaseController : ControllerBase
     public static bool IsDevelopment = false;
     private readonly DatabaseRepositorio _databaseRepositorio;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
-    private readonly UsuariosRepositorio _usuariosRepositorio;
+    private readonly UsuarioRepositorio _usuarioRepositorio;
     public DatabaseController(DatabaseRepositorio databaseRepositorio,
                               UsuarioConvertUnique usuarioConvertUnique,
-                              UsuariosRepositorio usuariosRepositorio)
+                              UsuarioRepositorio usuarioRepositorio)
     {
         _databaseRepositorio = databaseRepositorio;
         _usuarioConvertUnique = usuarioConvertUnique;
-        _usuariosRepositorio = usuariosRepositorio;
+        _usuarioRepositorio = usuarioRepositorio;
     }
 
     [Autorizar]
@@ -29,11 +29,13 @@ public class DatabaseController : ControllerBase
     public IActionResult Exportar()
     {
         var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
-        _usuariosRepositorio.AutorizaUsuarioImportarExportar(usuarioLogado);
+        _usuarioRepositorio.AutorizaUsuarioImportarExportar(usuarioLogado);
 
         var cargaBanco = _databaseRepositorio.ExportarBanco();
 
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Devolvido = cargaBanco, Mensagem = Mensagens.REQUISICAO_SUCESSO });
+        var json = new DevolvidoMensagensDTO();
+        json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
+        return StatusCode((int)HttpStatusCode.OK, json);
     }
     
     [Autorizar]
@@ -42,10 +44,12 @@ public class DatabaseController : ControllerBase
     public async Task<IActionResult> Importar([FromBody]CargaBancoDTO cargaBanco)
     {
         var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
-        _usuariosRepositorio.AutorizaUsuarioImportarExportar(usuarioLogado);
+        _usuarioRepositorio.AutorizaUsuarioImportarExportar(usuarioLogado);
         
         await _databaseRepositorio.ImportarBanco(cargaBanco);
 
-        return StatusCode((int)HttpStatusCode.OK, new DevolvidoMensagemDTO { Mensagem = Mensagens.REQUISICAO_SUCESSO });
+        var json = new DevolvidoMensagensDTO();
+        json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
+        return StatusCode((int)HttpStatusCode.OK, json);
     }
 }

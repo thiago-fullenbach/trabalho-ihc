@@ -21,7 +21,7 @@ public class UsuarioConvertUnique
         _configuracoesServico = configuracoesServico;
         _criptografiaServico = criptografiaServico;
     }
-    public UsuarioLogadoDTO ParaUsuarioLogadoDTO(Usuarios usuario)
+    public UsuarioLogadoDTO ParaUsuarioLogadoDTO(Usuario usuario)
     {
         var resultado = new UsuarioLogadoDTO
         {
@@ -34,9 +34,9 @@ public class UsuarioConvertUnique
         };
         return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
     }
-    public Usuarios ParaUsuarios(CadUsuarioCadastreSeDTO cadUsuario)
+    public Usuario ParaUsuario(CadUsuarioCadastreSeDTO cadUsuario)
     {
-        var cadUsuarioCadastravel = new Usuarios
+        var cadUsuarioCadastravel = new Usuario
         {
             nome = cadUsuario.Nome.ToUpper(),
             cpf = cadUsuario.CPF.Replace(".", "").Replace("-", ""),
@@ -65,7 +65,7 @@ public class UsuarioConvertUnique
             { filtro.Login = filtro.Login.ToLower(); }
         return Utilitarios.DevolverComNovoEspacoNaMemoria(filtroPesquisavel);
     }
-    public UsuarioPesquisadoDTO ParaUsuarioPesquisadoDTO(Usuarios usuario)
+    public UsuarioPesquisadoDTO ParaUsuarioPesquisadoDTO(Usuario usuario)
     {
         var resultado = new UsuarioPesquisadoDTO
         {

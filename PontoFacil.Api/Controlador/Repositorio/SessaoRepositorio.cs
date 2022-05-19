@@ -11,12 +11,12 @@ using PontoFacil.Api.Modelo;
 using PontoFacil.Api.Modelo.Contexto;
 
 namespace PontoFacil.Api.Controlador.Repositorio;
-public class SessoesRepositorio
+public class SessaoRepositorio
 {
     private readonly PontoFacilContexto _contexto;
     private readonly ConfiguracoesServico _configuracoesServico;
     private readonly SessaoConvertUnique _sessaoConvertUnique;
-    public SessoesRepositorio(PontoFacilContexto contexto,
+    public SessaoRepositorio(PontoFacilContexto contexto,
                               ConfiguracoesServico configuracoesServico,
                               SessaoConvertUnique sessaoConvertUnique)
     {
@@ -24,12 +24,12 @@ public class SessoesRepositorio
         _configuracoesServico = configuracoesServico;
         _sessaoConvertUnique = sessaoConvertUnique;
     }
-    public async Task<Sessoes> AbrirSessao(int usuarioId)
+    public async Task<Sessao> AbrirSessao(int usuarioId)
     {
-        var inclSessao = new Sessoes
+        var inclSessao = new Sessao
         {
-            hexVerificacao = GeraHexVerificacao(),
-            usuarios_id = usuarioId,
+            hex_verificacao = GeraHex_verificacao(),
+            usuario_id = usuarioId,
             datahora_ultima_autenticacao = DateTime.Now
         };
         await _contexto.Sessoes.AddAsync(inclSessao);
@@ -37,9 +37,9 @@ public class SessoesRepositorio
         await AgendarBatchExclusaoSessoes();
         return inclSessao;
     }
-    public string GeraHexVerificacao()
+    public string GeraHex_verificacao()
     {
-        return CriptografiaServico.HexAleatorioSeguro128Caracteres;
+        return CriptografiaServico.HexAleatorioSeguro128Caracteres();
     }
     public async Task AgendarBatchExclusaoSessoes()
     {
@@ -47,11 +47,11 @@ public class SessoesRepositorio
         var gerenciadorAgendamento = await GerenciadorAgendamento.Instancia(_configuracoesServico);
         await gerenciadorAgendamento.DefineProximoBatchExclusaoSessoes(sessoesExclusao, _configuracoesServico);
     }
-    public async Task<Sessoes> AtualizarSessao(SessaoEnviarPeloHeaderDTO sessao)
+    public async Task<Sessao> AtualizarSessao(SessaoEnvioHeaderDTO sessao)
     {
         var updtSessao = _contexto.Sessoes
             .FirstOrDefault(x => x.id == sessao.Id
-            && x.hexVerificacao == sessao.HexVerificacao);
+            && x.hex_verificacao == sessao.Hex_verificacao);
         var erros = new List<string>();
         if (updtSessao == null || Expirou(updtSessao))
             { erros.Add(string.Format(Mensagens.XXXX_INVALIDY, "Sessão", "a")); }
@@ -63,22 +63,18 @@ public class SessoesRepositorio
         await AgendarBatchExclusaoSessoes();
         return updtSessao;
     }
-    public bool Expirou(Sessoes sessao)
+    public bool Expirou(Sessao sessao)
     {
         return (DateTime.Now > sessao.datahora_ultima_autenticacao + _configuracoesServico.TempoExpirarSessao);
     }
     public async Task ExcluirSessoesExpiradas()
     {
         var sessoes = _contexto.Sessoes.AsNoTracking();
-        var sessoesExpiradas = new List<Sessoes>();
+        var sessoesExpiradas = new List<Sessao>();
         foreach (var x in sessoes)
             { if (Expirou(x)) { sessoesExpiradas.Add(x); } }
         _contexto.Sessoes.RemoveRange(Utilitarios.ParaLista(sessoesExpiradas));
         await _contexto.SaveChangesAsync();
         await AgendarBatchExclusaoSessoes();
-    }
-    public static string ExtrairUrlBatchExclusaoSessoes(HttpRequest request)
-    {
-        return $"{request.Scheme}://{request.Host.Value}/api/v1/Autorizacao/excluirSessoesExpiradas";
     }
 }

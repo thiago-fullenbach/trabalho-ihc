@@ -22,39 +22,39 @@ public static class InjecaoDependencia
     {
         services.AddDbContext<PontoFacilContexto>(options => {
             options.UseMySql(conexao, ServerVersion.AutoDetect(conexao));
-        });
+        }, ServiceLifetime.Singleton);
         return services;
     }
     public static IServiceCollection AdicionarContextoDeConexaoInMemory(this IServiceCollection services)
     {
         services.AddDbContext<PontoFacilContexto>(options => {
             options.UseInMemoryDatabase("pontofacil_inmemorydb");
-        });
+        }, ServiceLifetime.Singleton);
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeServicos(this IServiceCollection services)
     {
-        services.AddScoped<ConfiguracoesServico>();
-        services.AddScoped<CriptografiaServico>();
+        services.AddSingleton<ConfiguracoesServico>();
+        services.AddSingleton<CriptografiaServico>();
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeConversoesUnicas(this IServiceCollection services)
     {
-        services.AddScoped<UsuarioConvertUnique>();
-        services.AddScoped<SessaoConvertUnique>();
-        services.AddScoped<RecursoConvertUnique>();
+        services.AddSingleton<UsuarioConvertUnique>();
+        services.AddSingleton<SessaoConvertUnique>();
+        services.AddSingleton<AcessoConvertUnique>();
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeConversoes(this IServiceCollection services)
     {
-        services.AddScoped<UsuarioConvert>();
+        services.AddSingleton<UsuarioConvert>();
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeRepositorios(this IServiceCollection services)
     {
-        services.AddScoped<UsuariosRepositorio>();
-        services.AddScoped<SessoesRepositorio>();
-        services.AddScoped<DatabaseRepositorio>();
+        services.AddSingleton<UsuarioRepositorio>();
+        services.AddSingleton<SessaoRepositorio>();
+        services.AddSingleton<DatabaseRepositorio>();
         return services;
     }
 }

@@ -17,12 +17,12 @@ public class CorsUtilitarios
         int totalChaves = randomServico.Next(minimoChaves, maximoChaves + 1);
         var dicionario = new Dictionary<string, string>();
         foreach (var _ in new byte[totalChaves])
-            { dicionario.TryAdd(CorsUtilitarios.GeraChaveHeaderAleatoria(), CriptografiaServico.HexAleatorioSeguro128Caracteres); }
+            { dicionario.TryAdd(CorsUtilitarios.GeraChaveHeaderAleatoria(), CriptografiaServico.HexAleatorioSeguro128Caracteres()); }
         return dicionario;
     }
     public static string GeraChaveHeaderAleatoria()
     {
-        var hexBase = CriptografiaServico.HexAleatorioSeguro128Caracteres;
+        var hexBase = CriptografiaServico.HexAleatorioSeguro128Caracteres();
         string total = string.Empty;
         foreach (var caractere in hexBase)
         {

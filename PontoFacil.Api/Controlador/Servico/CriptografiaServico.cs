@@ -17,21 +17,18 @@ public class CriptografiaServico
         var hash = _hmacSha512.ComputeHash(bytesSenha);
         return BitConverter.ToString(hash).ToLower().Replace("-", string.Empty);
     }
-    public static string HexAleatorioSeguro128Caracteres
+    public static string HexAleatorioSeguro128Caracteres()
     {
-        get
-        {
-            var r = new Random(Guid.NewGuid().GetHashCode());
-            int DATA_SIZE = 128;
-            byte[] data = new byte[DATA_SIZE];
-            r.NextBytes(data);
-            byte[] result;
-            SHA512 shaM = SHA512.Create();
-            result = shaM.ComputeHash(data);
-            string bytesHexFormat = string.Empty;
-            foreach (var x in result)
-            { bytesHexFormat += x.ToString("X2"); } 
-            return bytesHexFormat;
-        }
+        var r = new Random(Guid.NewGuid().GetHashCode());
+        int DATA_SIZE = 128;
+        byte[] data = new byte[DATA_SIZE];
+        r.NextBytes(data);
+        byte[] result;
+        SHA512 shaM = SHA512.Create();
+        result = shaM.ComputeHash(data);
+        string bytesHexFormat = string.Empty;
+        foreach (var x in result)
+        { bytesHexFormat += x.ToString("X2"); } 
+        return bytesHexFormat;
     }
 }

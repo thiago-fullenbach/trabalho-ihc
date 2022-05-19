@@ -2,10 +2,12 @@ import LoginXSenhaDTO from "./DTO/DoClienteParaServidor/LoginXSenhaDTO";
 import RespostaDoServidor from "./DTO/DoServidorParaCliente/Extra/RespostaDoServidor";
 import axios from 'axios';
 import CadUsuarioCadastreSeDTO from "./DTO/DoClienteParaServidor/CadUsuarioCadastreSeDTO";
+import EstadoAmbienteAplicacao from "./EstadoAmbienteAplicacao";
+import AmbienteAplicacaoStateful from "./AplicacaoStateful";
 
 class ApiUtil {
     static get string_urlApiV1() {
-        const string_urlDominioApi = location.hostname === 'ihc-n-ponto-facil.herokuapp.com' ? "https://ihc-n-ponto-facil-api.herokuapp.com/api/v1" : "http://localhost:5086/api/v1";
+        const string_urlDominioApi = `${AmbienteAplicacaoStateful.estado.urlDominioApi}/api/v1`;
         return string_urlDominioApi;
     }
 

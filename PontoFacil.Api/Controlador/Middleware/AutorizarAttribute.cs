@@ -19,12 +19,12 @@ public class AutorizarAttribute : ActionFilterAttribute
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var erroInterno = new StringBuilder();
-        var sessoesRepositorio = context.HttpContext.RequestServices.GetService<SessoesRepositorio>();
+        var sessaoRepositorio = context.HttpContext.RequestServices.GetService<SessaoRepositorio>();
         var sessaoConvertUnique = context.HttpContext.RequestServices.GetService<SessaoConvertUnique>();
         var contexto = context.HttpContext.RequestServices.GetService<PontoFacilContexto>();
         var usuarioConvert = context.HttpContext.RequestServices.GetService<UsuarioConvert>();
-        if (sessoesRepositorio == null)
-            { erroInterno.AppendLine(string.Format(Mensagens.FALHA_RECUPERAR_XXXX_AO_CHAMAR_GETSERVICE_XXXX, "SessoesRepositorio")); }
+        if (sessaoRepositorio == null)
+            { erroInterno.AppendLine(string.Format(Mensagens.FALHA_RECUPERAR_XXXX_AO_CHAMAR_GETSERVICE_XXXX, "SessaoRepositorio")); }
         if (sessaoConvertUnique == null)
             { erroInterno.AppendLine(string.Format(Mensagens.FALHA_RECUPERAR_XXXX_AO_CHAMAR_GETSERVICE_XXXX, "SessaoConvertUnique")); }
         if (contexto == null)
@@ -35,12 +35,12 @@ public class AutorizarAttribute : ActionFilterAttribute
             { throw new Exception(erroInterno.ToString()); }
 
         // antes de ser consumido pelo endpoint
-        var sessaoEnviada = sessaoConvertUnique.ExtrairSessaoEnviarPeloHeader(context.HttpContext.Request.Headers);
-        var sessaoUpd = await sessoesRepositorio.AtualizarSessao(sessaoEnviada);
-        var sessaoEnviarNovamente = sessaoConvertUnique.ParaSessaoEnviarPeloHeaderDTO(sessaoUpd);
+        var sessaoEnviada = sessaoConvertUnique.ExtrairSessaoEnvioHeader(context.HttpContext.Request.Headers);
+        var sessaoUpd = await sessaoRepositorio.AtualizarSessao(sessaoEnviada);
+        var sessaoEnviarNovamente = sessaoConvertUnique.ParaSessaoEnvioHeaderDTO(sessaoUpd);
         var usuario = contexto.Usuarios
             .AsNoTracking()
-            .First(x => x.id == sessaoUpd.usuarios_id);
+            .First(x => x.id == sessaoUpd.usuario_id);
         var usuarioLogado = usuarioConvert.ParaUsuarioLogadoDTO(usuario);
         context.HttpContext.Request.Headers["sessao"] = JsonConvert.SerializeObject(sessaoEnviarNovamente);
         context.HttpContext.Request.Headers["usuario"] = JsonConvert.SerializeObject(usuarioLogado);
@@ -48,11 +48,11 @@ public class AutorizarAttribute : ActionFilterAttribute
         await next();
 
         // depois de ser consumido pelo endpoint
-        sessaoUpd = await sessoesRepositorio.AtualizarSessao(sessaoEnviarNovamente);
-        sessaoEnviarNovamente = sessaoConvertUnique.ParaSessaoEnviarPeloHeaderDTO(sessaoUpd);
+        sessaoUpd = await sessaoRepositorio.AtualizarSessao(sessaoEnviarNovamente);
+        sessaoEnviarNovamente = sessaoConvertUnique.ParaSessaoEnvioHeaderDTO(sessaoUpd);
         usuario = contexto.Usuarios
             .AsNoTracking()
-            .First(x => x.id == sessaoUpd.usuarios_id);
+            .First(x => x.id == sessaoUpd.usuario_id);
         usuarioLogado = usuarioConvert.ParaUsuarioLogadoDTO(usuario);
         context.HttpContext.Response.Headers["sessao"] = JsonConvert.SerializeObject(sessaoEnviarNovamente);
         context.HttpContext.Response.Headers["usuario"] = JsonConvert.SerializeObject(usuarioLogado);
