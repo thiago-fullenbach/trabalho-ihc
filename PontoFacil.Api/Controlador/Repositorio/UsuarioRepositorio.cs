@@ -41,7 +41,7 @@ public class UsuarioRepositorio
             && x.senha == senhaHasheada);
         var mensagens = new List<string>();
         if (usuario == null)
-            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Login ou senha", "os")); }
+            { mensagens.Add("Login ou senha inválidos."); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
 
         return usuario;
@@ -109,9 +109,9 @@ public class UsuarioRepositorio
     {
         var mensagens = new List<string>();
         if (string.IsNullOrWhiteSpace(loginSenha.Login))
-            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Login", "o")); }
+            { mensagens.Add("Login obrigatório"); }
         if (string.IsNullOrWhiteSpace(loginSenha.Senha))
-            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Senha", "a")); }
+            { mensagens.Add("Senha obrigatória"); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
     }
     public void ValidarCadastreSe(CadUsuarioCadastreSeDTO cadUsuario)

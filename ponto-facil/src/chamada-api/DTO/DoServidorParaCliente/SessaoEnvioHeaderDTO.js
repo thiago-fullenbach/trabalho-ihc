@@ -1,4 +1,4 @@
-export default class SessaoDTO {
+export default class SessaoEnvioHeaderDTO {
     get int_id() {
         return this.Id;
     }

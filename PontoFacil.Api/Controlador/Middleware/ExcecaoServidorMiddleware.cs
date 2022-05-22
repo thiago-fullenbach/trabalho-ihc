@@ -23,7 +23,7 @@ public class ExcecaoServidorMiddleware
             {
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 var corpo = new DevolvidoMensagensDTO();
-                corpo.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
+                corpo.SetMensagemUnica(Mensagens.FALHA_REQUISICAO);
                 await EscreveRespostaJsonAsync(context, corpo);
             }
         }

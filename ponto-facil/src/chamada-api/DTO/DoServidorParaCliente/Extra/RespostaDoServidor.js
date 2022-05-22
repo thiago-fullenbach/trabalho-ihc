@@ -1,5 +1,5 @@
-import DevolvidoMensagemDTO from "../DevolvidoMensagemDTO";
-import SessaoDTO from "../SessaoDTO";
+import DevolvidoMensagensDTO from "../DevolvidoMensagensDTO";
+import SessaoEnvioHeaderDTO from "../SessaoEnvioHeaderDTO";
 
 export default class RespostaDoServidor {
     get int_status() {
@@ -9,10 +9,10 @@ export default class RespostaDoServidor {
         this.status = value;
     }
     
-    get SessaoDTO_sessao() {
+    get SessaoEnvioHeaderDTO_sessao() {
         return this.sessao;
     }
-    set SessaoDTO_sessao(value) {
+    set SessaoEnvioHeaderDTO_sessao(value) {
         this.sessao = value;
     }
     
@@ -23,10 +23,10 @@ export default class RespostaDoServidor {
         this.usuario = value;
     }
 
-    get DevolvidoMensagemDTO_corpo() {
+    get DevolvidoMensagensDTO_corpo() {
         return this.corpo;
     }
-    set DevolvidoMensagemDTO_corpo(value) {
+    set DevolvidoMensagensDTO_corpo(value) {
         this.corpo = value;
     }
 
@@ -37,7 +37,7 @@ export default class RespostaDoServidor {
       RespostaDoServidor_retorno.SessaoDTO_sessao = any_sessao;
       let any_usuario = JSON.parse(AxiosResponse_resposta.headers["usuario"]);
       RespostaDoServidor_retorno.UsuarioLogadoDTO_usuario = any_usuario;
-      RespostaDoServidor_retorno.DevolvidoMensagemDTO_corpo = AxiosResponse_resposta.data;
+      RespostaDoServidor_retorno.DevolvidoMensagensDTO_corpo = AxiosResponse_resposta.data;
       return RespostaDoServidor_retorno;
     }
 }
