@@ -68,10 +68,11 @@ public class UsuarioRepositorio
     public async Task<Usuario> TornaAdministrador(int idUsuario)
     {
         var acessosUsuario = _contexto.Acessos.Where(x => x.usuario_id == idUsuario);
+        var dataAgr = DateTime.Now;
         foreach (var iAcesso in acessosUsuario)
         {
             iAcesso.eh_habilitado = true;
-            iAcesso.datahora_modificacao = DateTime.Now;
+            iAcesso.datahora_modificacao = dataAgr;
         }
         _contexto.Acessos.UpdateRange(acessosUsuario);
         await _contexto.SaveChangesAsync();

@@ -44,8 +44,8 @@ public class AcessoConvertUnique
                 {
                     Recurso_cod_en = (int)EnRecurso.VisualizarDemaisUsuarios,
                     Eh_habilitado = false
-                }
-                ,new AcessoUsuarioLogadoDTO
+                },
+                new AcessoUsuarioLogadoDTO
                 {
                     Recurso_cod_en = (int)EnRecurso.CadastrarDemaisUsuarios,
                     Eh_habilitado = false
@@ -57,10 +57,20 @@ public class AcessoConvertUnique
                 },
                 new AcessoUsuarioLogadoDTO
                 {
+                    Recurso_cod_en = (int)EnRecurso.VisualizarLocal,
+                    Eh_habilitado = true
+                },
+                new AcessoUsuarioLogadoDTO
+                {
+                    Recurso_cod_en = (int)EnRecurso.CadastrarLocal,
+                    Eh_habilitado = false
+                },
+                new AcessoUsuarioLogadoDTO
+                {
                     Recurso_cod_en = (int)EnRecurso.VisualizarPonto,
                     Eh_habilitado = true
-                }
-                ,new AcessoUsuarioLogadoDTO
+                },
+                new AcessoUsuarioLogadoDTO
                 {
                     Recurso_cod_en = (int)EnRecurso.RegistrarPonto,
                     Eh_habilitado = true
