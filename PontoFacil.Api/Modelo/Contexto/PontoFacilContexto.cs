@@ -12,7 +12,6 @@ public class PontoFacilContexto : DbContext
     public DbSet<Acesso> Acessos { get; set; }
     public DbSet<Sessao> Sessoes { get; set; }
     public DbSet<Local> Locais { get; set; }
-    public DbSet<Apelido> Apelidos { get; set; }
     public DbSet<Presenca> Presencas { get; set; }
     public DbSet<Ajuste> Ajustes { get; set; }
 
@@ -31,11 +30,6 @@ public class PontoFacilContexto : DbContext
         });
         modelBuilder.Entity<Local>(local => {
             local.HasKey(x => x.id);
-        });
-        modelBuilder.Entity<Apelido>(apelido => {
-            apelido.HasKey(x => new { x.usuario_id, x.local_id });
-            apelido.HasOne(x => x.NavegacaoUsuario).WithMany(y => y.NavegacaoMuitosApelidos).HasForeignKey(x => x.usuario_id);
-            apelido.HasOne(x => x.NavegacaoLocal).WithMany(y => y.NavegacaoMuitosApelidos).HasForeignKey(x => x.local_id);
         });
         modelBuilder.Entity<Presenca>(presenca => {
             presenca.HasKey(x => x.id);

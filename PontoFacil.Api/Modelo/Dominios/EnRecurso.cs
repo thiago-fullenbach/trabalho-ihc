@@ -6,13 +6,10 @@ public enum EnRecurso
     VisualizarDemaisUsuarios = 3,
     CadastrarDemaisUsuarios = 4,
     CadastrarAcessoTodosUsuarios = 5,
-    VisualizarLocal = 6,
-    CadastrarLocal = 7,
-    VisualizarPonto = 8,
-    RegistrarPonto = 9,
-    VisualizarPontoDemaisUsuarios = 10,
-    VisualizarAjuste = 11,
-    VisualizarAjusteDemaisUsuarios = 12,
-    RegistrarAjusteDemaisUsuarios = 13
-    // VisualizarApelido e CadastrarApelido são opções que devem estar sempre habilitadas, portanto, sem configuração.
+    VisualizarPonto = 6,
+    RegistrarPonto = 7,
+    VisualizarPontoDemaisUsuarios = 8,
+    VisualizarAjuste = 9,
+    VisualizarAjusteDemaisUsuarios = 10,
+    RegistrarAjusteDemaisUsuarios = 11
 }

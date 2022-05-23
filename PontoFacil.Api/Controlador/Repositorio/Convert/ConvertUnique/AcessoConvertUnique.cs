@@ -57,16 +57,6 @@ public class AcessoConvertUnique
                 },
                 new AcessoUsuarioLogadoDTO
                 {
-                    Recurso_cod_en = (int)EnRecurso.VisualizarLocal,
-                    Eh_habilitado = true
-                },
-                new AcessoUsuarioLogadoDTO
-                {
-                    Recurso_cod_en = (int)EnRecurso.CadastrarLocal,
-                    Eh_habilitado = false
-                },
-                new AcessoUsuarioLogadoDTO
-                {
                     Recurso_cod_en = (int)EnRecurso.VisualizarPonto,
                     Eh_habilitado = true
                 },

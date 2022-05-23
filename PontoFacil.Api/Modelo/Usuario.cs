@@ -5,7 +5,6 @@ public class Usuario
     {
         NavegacaoMuitosAcessos = new List<Acesso>();
         NavegacaoMuitasSessoes = new List<Sessao>();
-        NavegacaoMuitosApelidos = new List<Apelido>();
         NavegacaoMuitasPresencas = new List<Presenca>();
         NavegacaoMuitosAjustesPresentes = new List<Ajuste>();
         NavegacaoMuitosAjustesRegistrados = new List<Ajuste>();
@@ -24,7 +23,6 @@ public class Usuario
     public bool? eh_senha_temporaria { get; set; }
     public virtual IList<Acesso> NavegacaoMuitosAcessos { get; set; }
     public virtual IList<Sessao> NavegacaoMuitasSessoes { get; set; }
-    public virtual IList<Apelido> NavegacaoMuitosApelidos { get; set; }
     public virtual IList<Presenca> NavegacaoMuitasPresencas { get; set; }
     public virtual IList<Ajuste> NavegacaoMuitosAjustesPresentes { get; set; }
     public virtual IList<Ajuste> NavegacaoMuitosAjustesRegistrados { get; set; }

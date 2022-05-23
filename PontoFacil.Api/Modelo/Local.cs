@@ -3,7 +3,6 @@ public class Local
 {
     public Local()
     {
-        NavegacaoMuitosApelidos = new List<Apelido>();
         NavegacaoMuitasPresencas = new List<Presenca>();
         NavegacaoMuitosAjustes = new List<Ajuste>();
     }
@@ -16,7 +15,6 @@ public class Local
     public string uf { get; set; }
     public DateTime datahora_criacao { get; set; }
     public DateTime? datahora_modificacao { get; set; }
-    public virtual IList<Apelido> NavegacaoMuitosApelidos { get; set; }
     public virtual IList<Presenca> NavegacaoMuitasPresencas { get; set; }
     public virtual IList<Ajuste> NavegacaoMuitosAjustes { get; set; }
 }
