@@ -34,6 +34,7 @@ public class DatabaseController : ControllerBase
         var cargaBanco = _databaseRepositorio.ExportarBanco();
 
         var json = new DevolvidoMensagensDTO();
+        json.Devolvido = cargaBanco;
         json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
         return StatusCode((int)HttpStatusCode.OK, json);
     }
