@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using PontoFacil.Api;
 using PontoFacil.Api.Batch;
+using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1;
+using PontoFacil.Api.Controlador.Repositorio;
 using PontoFacil.Api.Controlador.Servico;
 using PontoFacil.Api.Modelo.Contexto;
 
@@ -13,8 +16,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-string conexao_mariaDb = builder.Configuration.GetConnectionString("MariaDb");
-builder.Services.AdicionarContextoDeConexaoMySql(conexao_mariaDb);
+
+builder.AdicionarContextoDeConexao();
 builder.Services.AdicionarBibliotecaDeServicos();
 builder.Services.AdicionarBibliotecaDeConversoesUnicas();
 builder.Services.AdicionarBibliotecaDeConversoes();
@@ -25,13 +28,15 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: permissoesCorsNome,
                       policy  =>
                       {
-                          policy.WithOrigins("http://localhost:3000")
+                          policy.AllowAnyOrigin()
                                              .AllowAnyHeader()
                                              .AllowAnyMethod()
                                              .WithExposedHeaders("sessao", "usuario");
                       });
 });
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+builder.ExporUrlsForaContainer();
 
 var app = builder.Build();
 
@@ -40,9 +45,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    DatabaseController.IsDevelopment = true;
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseCors(permissoesCorsNome);
 app.UsarMiddlewaresCustomizados();
@@ -51,12 +57,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-var services = app.Services.CreateScope().ServiceProvider;
-var contexto = services.GetService<PontoFacilContexto>();
-await contexto.Database.MigrateAsync();
-var configServico = services.GetService<ConfiguracoesServico>();
-await GerenciadorAgendamento.Instancia(configServico);
-var contextAccessor = services.GetService<IHttpContextAccessor>();
-ParametrosBatchExclusaoSessoes.UrlsServidor = new List<string>(builder.WebHost.GetSetting(WebHostDefaults.ServerUrlsKey).Split(';'));
+var instcAplicacao = AplicacaoMementoSingleton.PegaInstancia();
+instcAplicacao.App = app;
+instcAplicacao.Builder = builder;
+
+var processador = new PrimeirasExecucoes();
+await processador.MigraBancoDadosSeRelacionalAsync();
+await processador.CarregaBatchExclusaoSessoesAsync();
+await processador.CarregaDadosIniciaisAsync();
 
 app.Run();

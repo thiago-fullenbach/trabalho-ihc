@@ -12,12 +12,23 @@ public class NegocioException : Exception
     }
     public static string MontaMensagemErro(List<string> listaMensagens)
     {
-        var saida_texto = new StringBuilder();
-        saida_texto.AppendLine(Mensagens.ERRO_NEGOCIO_CABECALHO);
+        string texto = string.Empty;
+        bool primeiraLinha = true;
         foreach (var iMensagem in listaMensagens)
         {
-            saida_texto.AppendLine(string.Format(Mensagens.ERRO_NEGOCIO_ITEM_XXXX, iMensagem));
+            if (primeiraLinha)
+            {
+                primeiraLinha = false;
+                texto = iMensagem;
+            }
+            else { texto += Mensagens.PROXIMA_LINHA + iMensagem; }
         }
-        return saida_texto.ToString();
+        return texto;
+    }
+    public static List<string> DesmontaMensagemErro(string mensagemErro)
+    {
+        var mensagensArray = mensagemErro.Split(Mensagens.PROXIMA_LINHA);
+        var mensagensLista = new List<string>(mensagensArray);
+        return mensagensLista;
     }
 }

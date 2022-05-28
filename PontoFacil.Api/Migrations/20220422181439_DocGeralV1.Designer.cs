@@ -249,7 +249,7 @@ namespace PontoFacil.Api.Migrations
                     b.Property<DateTime>("datahora_ultima_autenticacao")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("hexVerificacao")
+                    b.Property<string>("hex_verificacao")
                         .IsRequired()
                         .HasColumnType("longtext");
 

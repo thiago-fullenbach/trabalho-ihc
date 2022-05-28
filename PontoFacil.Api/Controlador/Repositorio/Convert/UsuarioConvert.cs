@@ -11,24 +11,26 @@ public class UsuarioConvert
     private readonly PontoFacilContexto _contexto;
     private readonly ConfiguracoesServico _configuracoesServico;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
-    private readonly RecursoConvertUnique _recursoConvertUnique;
+    private readonly AcessoConvertUnique _acessoConvertUnique;
     public UsuarioConvert(PontoFacilContexto contexto,
                           ConfiguracoesServico configuracoesServico,
                           UsuarioConvertUnique usuarioConvertUnique,
-                          RecursoConvertUnique recursoConvertUnique)
+                          AcessoConvertUnique acessoConvertUnique)
     {
         _contexto = contexto;
         _configuracoesServico = configuracoesServico;
         _usuarioConvertUnique = usuarioConvertUnique;
-        _recursoConvertUnique = recursoConvertUnique;
+        _acessoConvertUnique = acessoConvertUnique;
     }
-    public UsuarioLogadoDTO ParaUsuarioLogadoDTO(Usuarios usuario)
+    public UsuarioLogadoDTO ParaUsuarioLogadoDTO(Usuario usuario)
     {
         var usuarioLogado = _usuarioConvertUnique.ParaUsuarioLogadoDTO(usuario);
-        var recurso = _contexto.Recursos
+        var acessosUsuario = _contexto.Acessos
             .AsNoTracking()
-            .First(x => x.usuarios_id == usuario.id);
-        usuarioLogado.NavegacaoRecurso = _recursoConvertUnique.ParaUsuarioRecursoDTO(recurso);
+            .Where(x => x.usuario_id == usuario.id);
+        usuarioLogado.Acessos = new List<AcessoUsuarioLogadoDTO>();
+        foreach (var iAcesso in acessosUsuario)
+            { usuarioLogado.Acessos.Add(_acessoConvertUnique.ParaAcessoUsuarioLogadoDTO(iAcesso)); }
         return usuarioLogado;
     }
 }

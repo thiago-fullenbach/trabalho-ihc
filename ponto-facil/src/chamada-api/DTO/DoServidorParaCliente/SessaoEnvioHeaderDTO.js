@@ -1,4 +1,4 @@
-export default class SessaoDTO {
+export default class SessaoEnvioHeaderDTO {
     get int_id() {
         return this.Id;
     }
@@ -6,11 +6,11 @@ export default class SessaoDTO {
         this.Id = value;
     }
 
-    get string_hexVerificacao() {
-        return this.HexVerificacao;
+    get string_hex_verificacao() {
+        return this.Hex_verificacao;
     }
-    set string_hexVerificacao(value) {
-        this.HexVerificacao = value;
+    set string_hex_verificacao(value) {
+        this.Hex_verificacao = value;
     }
     
     get date_dataHoraUltimaAutenticacao() {

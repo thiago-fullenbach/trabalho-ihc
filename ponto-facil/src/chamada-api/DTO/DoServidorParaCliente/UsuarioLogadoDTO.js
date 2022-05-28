@@ -41,10 +41,10 @@ export default class SessaoDTO {
         this.Login = value;
     }
 
-    get UsuarioRecursoDTO_navegacaoRecurso() {
-        return this.NavegacaoRecurso;
+    get Lista_AcessoUsuarioLogadoDTO_acessos() {
+        return this.Acessos;
     }
-    set UsuarioRecursoDTO_navegacaoRecurso(value) {
-        this.NavegacaoRecurso = value;
+    set Lista_AcessoUsuarioLogadoDTO_acessos(value) {
+        this.Acessos = value;
     }
 }

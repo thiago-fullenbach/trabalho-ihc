@@ -1,0 +1,34 @@
+# dependencies
+/ponto-facil/node_modules
+/ponto-facil/.pnp
+/ponto-facil/.pnp.js
+
+/backend-mocado/node_modules
+/backend-mocado/.pnp
+/backend-mocado/.pnp.js
+
+# testing
+/ponto-facil/coverage
+
+# production
+/ponto-facil/build
+
+# misc
+/ponto-facil/.DS_Store
+/ponto-facil/.env.local
+/ponto-facil/.env.development.local
+/ponto-facil/.env.test.local
+/ponto-facil/.env.production.local
+
+/ponto-facil/npm-debug.log*
+/ponto-facil/yarn-debug.log*
+/ponto-facil/yarn-error.log*
+
+/node_modules
+
+/PontoFacil.Api/bin
+/PontoFacil.Api/obj
+
+/MariaDB
+
+/.vscode

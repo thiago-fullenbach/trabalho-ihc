@@ -14,21 +14,24 @@ public class ExcecaoServidorMiddleware
         catch (NegocioException negocioEx)
         {
             context.Response.StatusCode = negocioEx.StatusCodeErro;
-            var corpo = new DevolvidoMensagemDTO { Mensagem = negocioEx.Message };
-            var json = JsonConvert.SerializeObject(corpo);
-            var bytes = Encoding.UTF8.GetBytes(json);
-            await context.Response.Body.WriteAsync(bytes);
+            var corpo = new DevolvidoMensagensDTO { Mensagens = NegocioException.DesmontaMensagemErro(negocioEx.Message) };
+            await EscreveRespostaJsonAsync(context, corpo);
         }
         catch (Exception ex)
         {
             if (!(ex is NegocioException))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                var corpo = new DevolvidoMensagemDTO { Mensagem = Mensagens.FALHA_REQUISICAO };
-                var json = JsonConvert.SerializeObject(corpo);
-                var bytes = Encoding.UTF8.GetBytes(json);
-                await context.Response.Body.WriteAsync(bytes);
+                var corpo = new DevolvidoMensagensDTO();
+                corpo.SetMensagemUnica(Mensagens.FALHA_REQUISICAO);
+                await EscreveRespostaJsonAsync(context, corpo);
             }
         }
+    }
+    public static async Task EscreveRespostaJsonAsync(HttpContext context, DevolvidoMensagensDTO corpo)
+    {
+        var json = JsonConvert.SerializeObject(corpo);
+        var bytes = Encoding.UTF8.GetBytes(json);
+        await context.Response.Body.WriteAsync(bytes);
     }
 }

@@ -150,7 +150,7 @@ namespace PontoFacil.Api.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    hexVerificacao = table.Column<string>(type: "longtext", nullable: false)
+                    hex_verificacao = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     usuarios_id = table.Column<int>(type: "int", nullable: false),
                     datahora_ultima_autenticacao = table.Column<DateTime>(type: "datetime(6)", nullable: false)

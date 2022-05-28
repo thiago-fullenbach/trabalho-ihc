@@ -1,7 +1,10 @@
+using System.Net;
+using Newtonsoft.Json;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoClienteParaServidor;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaCliente;
 using PontoFacil.Api.Controlador.Repositorio.Comum;
 using PontoFacil.Api.Controlador.Servico;
+using PontoFacil.Api.Externo;
 using PontoFacil.Api.Modelo;
 using PontoFacil.Api.Modelo.Contexto;
 
@@ -19,7 +22,7 @@ public class UsuarioConvertUnique
         _configuracoesServico = configuracoesServico;
         _criptografiaServico = criptografiaServico;
     }
-    public UsuarioLogadoDTO ParaUsuarioLogadoDTO(Usuarios usuario)
+    public UsuarioLogadoDTO ParaUsuarioLogadoDTO(Usuario usuario)
     {
         var resultado = new UsuarioLogadoDTO
         {
@@ -32,16 +35,18 @@ public class UsuarioConvertUnique
         };
         return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
     }
-    public Usuarios ParaUsuarios(CadUsuarioCadastreSeDTO cadUsuario)
+    public Usuario ParaUsuario(CadUsuarioCadastreSeDTO cadUsuario)
     {
-        var cadUsuarioCadastravel = new Usuarios
+        var instcAplicacao = AplicacaoMementoSingleton.PegaInstancia();
+        var cadUsuarioCadastravel = new Usuario
         {
             nome = cadUsuario.Nome.ToUpper(),
             cpf = cadUsuario.CPF.Replace(".", "").Replace("-", ""),
             data_nascimento = cadUsuario.Data_nascimento.Value,
             horas_diarias = cadUsuario.Horas_diarias.Value,
             login = cadUsuario.Login.ToLower(),
-            senha = _criptografiaServico.HashearSenha(cadUsuario.Senha)
+            senha = _criptografiaServico.HashearSenha(cadUsuario.Senha),
+            url_hasheia_senha_sem_parametros = instcAplicacao.PegaUrlHasheiaSenhaSemParametros()
         };
         return Utilitarios.DevolverComNovoEspacoNaMemoria(cadUsuarioCadastravel);
     }
@@ -63,7 +68,7 @@ public class UsuarioConvertUnique
             { filtro.Login = filtro.Login.ToLower(); }
         return Utilitarios.DevolverComNovoEspacoNaMemoria(filtroPesquisavel);
     }
-    public UsuarioPesquisadoDTO ParaUsuarioPesquisadoDTO(Usuarios usuario)
+    public UsuarioPesquisadoDTO ParaUsuarioPesquisadoDTO(Usuario usuario)
     {
         var resultado = new UsuarioPesquisadoDTO
         {
@@ -75,5 +80,24 @@ public class UsuarioConvertUnique
             Login = usuario.login
         };
         return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
+    }
+    public UsuarioLogadoDTO ExtrairUsuarioLogado(IHeaderDictionary headers)
+    {
+        var mensagens = new List<string>();
+        if (!headers.ContainsKey("usuario"))
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Usuário logado", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+
+        var usuarioJson = headers["usuario"];
+        if (string.IsNullOrWhiteSpace(usuarioJson))
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Usuário logado", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+
+        var usuario = JsonConvert.DeserializeObject<UsuarioLogadoDTO>(usuarioJson);
+        if (usuario == null)
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Usuário logado", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+
+        return Utilitarios.DevolverComNovoEspacoNaMemoria(usuario);
     }
 }

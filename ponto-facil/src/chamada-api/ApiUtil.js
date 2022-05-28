@@ -2,10 +2,11 @@ import LoginXSenhaDTO from "./DTO/DoClienteParaServidor/LoginXSenhaDTO";
 import RespostaDoServidor from "./DTO/DoServidorParaCliente/Extra/RespostaDoServidor";
 import axios from 'axios';
 import CadUsuarioCadastreSeDTO from "./DTO/DoClienteParaServidor/CadUsuarioCadastreSeDTO";
+import AmbienteAplicacaoStateful from "./AplicacaoStateful";
 
 class ApiUtil {
     static get string_urlApiV1() {
-        const string_urlDominioApi = "https://localhost:7120/api/v1";
+        const string_urlDominioApi = `${AmbienteAplicacaoStateful.estado.urlDominioApi}/api/v1`;
         return string_urlDominioApi;
     }
 

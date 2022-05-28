@@ -16,17 +16,17 @@ public class SessaoConvertUnique
         _contexto = contexto;
         _configuracoesServico = configuracoesServico;
     }
-    public SessaoEnviarPeloHeaderDTO ParaSessaoEnviarPeloHeaderDTO(Sessoes sessao)
+    public SessaoEnvioHeaderDTO ParaSessaoEnvioHeaderDTO(Sessao sessao)
     {
-        var resultado = new SessaoEnviarPeloHeaderDTO
+        var resultado = new SessaoEnvioHeaderDTO
         {
             Id = sessao.id,
-            HexVerificacao = sessao.hexVerificacao,
+            Hex_verificacao = sessao.hex_verificacao,
             Datahora_ultima_autenticacao = sessao.datahora_ultima_autenticacao
         };
         return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
     }
-    public SessaoEnviarPeloHeaderDTO ExtrairSessaoEnviarPeloHeader(IHeaderDictionary headers)
+    public SessaoEnvioHeaderDTO ExtrairSessaoEnvioHeader(IHeaderDictionary headers)
     {
         var mensagens = new List<string>();
         if (!headers.ContainsKey("sessao"))
@@ -38,8 +38,8 @@ public class SessaoConvertUnique
             { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Sessão", "a")); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
 
-        var sessao = JsonConvert.DeserializeObject<SessaoEnviarPeloHeaderDTO>(sessaoJson);
-        if (sessao == null || sessao.Id == null || sessao.HexVerificacao == null)
+        var sessao = JsonConvert.DeserializeObject<SessaoEnvioHeaderDTO>(sessaoJson);
+        if (sessao == null || sessao.Id == null || sessao.Hex_verificacao == null)
             { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Sessão", "a")); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
 

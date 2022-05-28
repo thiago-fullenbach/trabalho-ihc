@@ -11,4 +11,13 @@ public static class InjecoesCustomizadas
         app.Use(ExcecaoServidorMiddleware.Middleware);
         return app;
     }
+    public static WebApplicationBuilder ExporUrlsForaContainer(this WebApplicationBuilder builder)
+    {
+        string aspnetcoreUrls = builder.Configuration["ASPNETCORE_URLS"];
+        builder.WebHost.UseKestrel()
+            .UseUrls(aspnetcoreUrls)
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseIISIntegration();
+        return builder;
+    }
 }

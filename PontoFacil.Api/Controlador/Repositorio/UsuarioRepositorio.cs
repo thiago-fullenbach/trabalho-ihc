@@ -8,56 +8,110 @@ using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaClien
 using PontoFacil.Api.Controlador.Repositorio.Comum;
 using PontoFacil.Api.Controlador.Repositorio.Convert.ConvertUnique;
 using PontoFacil.Api.Controlador.Servico;
+using PontoFacil.Api.Externo;
 using PontoFacil.Api.Modelo;
 using PontoFacil.Api.Modelo.Contexto;
 using Valida.CPF.CNPJ;
 
 namespace PontoFacil.Api.Controlador.Repositorio;
-public class UsuariosRepositorio
+public class UsuarioRepositorio
 {
     private readonly PontoFacilContexto _contexto;
     private readonly CriptografiaServico _criptografiaServico;
+    private readonly ConfiguracoesServico _configuracoesServico;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
-    private readonly RecursoConvertUnique _recursoConvertUnique;
-    public UsuariosRepositorio(PontoFacilContexto contexto,
+    private readonly AcessoConvertUnique _acessoConvertUnique;
+    public UsuarioRepositorio(PontoFacilContexto contexto,
                                CriptografiaServico criptografiaServico,
+                               ConfiguracoesServico configuracoesServico,
                                UsuarioConvertUnique usuarioConvertUnique,
-                               RecursoConvertUnique recursoConvertUnique)
+                               AcessoConvertUnique acessoConvertUnique)
     {
         _contexto = contexto;
         _criptografiaServico = criptografiaServico;
+        _configuracoesServico = configuracoesServico;
         _usuarioConvertUnique = usuarioConvertUnique;
-        _recursoConvertUnique = recursoConvertUnique;
+        _acessoConvertUnique = acessoConvertUnique;
     }
-    public Usuarios RecuperarUsuarioPeloLoginSenha(LoginXSenhaDTO loginSenha)
+    public async Task<Usuario> RecuperarUsuarioPeloLoginSenha(LoginXSenhaDTO loginSenha)
     {
-        string senhaHasheada = _criptografiaServico.HashearSenha(loginSenha.Senha);
         var usuario = _contexto.Usuarios
             .AsNoTracking()
-            .FirstOrDefault(x => x.login == loginSenha.Login
-            && x.senha == senhaHasheada);
+            .FirstOrDefault(x => x.login == loginSenha.Login);
         var mensagens = new List<string>();
         if (usuario == null)
-            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Login ou senha", "os")); }
+            { mensagens.Add("Login ou senha inválidos."); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+        var chamadaApi = new ChamadaApi();
+        chamadaApi.ChamadaApiStateCriado = chamadaApi.CriaStatePelaUrlHasheiaSenhaSemParametros(usuario.url_hasheia_senha_sem_parametros);
+        string senhaHasheada = await chamadaApi.HasheiaSenha(loginSenha.Senha);
+        if (senhaHasheada != usuario.senha)
+            { mensagens.Add("Login ou senha inválidos."); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+        
+        var instcAplicacao = AplicacaoMementoSingleton.PegaInstancia();
+        var updtUrlHasheiaSenhaSemParametros = instcAplicacao.PegaUrlHasheiaSenhaSemParametros();
+        if (chamadaApi.ChamadaApiStateCriado.PegaUrlHasheiaSenhaSemParametros() != updtUrlHasheiaSenhaSemParametros)
+        {
+            var updtUsuario = _contexto.Usuarios.First(x => x.login == loginSenha.Login);
+            updtUsuario.senha = _criptografiaServico.HashearSenha(loginSenha.Senha);
+            updtUsuario.url_hasheia_senha_sem_parametros = updtUrlHasheiaSenhaSemParametros;
+            _contexto.Usuarios.Update(updtUsuario);
+            await _contexto.SaveChangesAsync();
+        }
 
         return usuario;
     }
-    public async Task<Usuarios> CriarUsuarioPeloCadastreSe(CadUsuarioCadastreSeDTO cadUsuario)
+    public async Task<Usuario> CriarUsuarioPeloCadastreSe(CadUsuarioCadastreSeDTO cadUsuario)
     {
-        var inclUsuario = _usuarioConvertUnique.ParaUsuarios(cadUsuario);
+        var inclUsuario = _usuarioConvertUnique.ParaUsuario(cadUsuario);
         var dataAgr = DateTime.Now;
         inclUsuario.datahora_criacao = dataAgr;
-        var recursoPadrao = RecursoConvertUnique.RecursoPadrao;
-        var inclRecurso = _recursoConvertUnique.ParaRecursos(recursoPadrao);
-        inclRecurso.datahora_criacao = dataAgr;
-        inclRecurso.NavegacaoUsuarios = inclUsuario;
+        var acessosPadrao = AcessoConvertUnique.AcessosPadrao;
+        var inclListaAcessos = new List<Acesso>();
+        foreach (var iAcessoPadrao in acessosPadrao)
+        {
+            var acessoAdd = _acessoConvertUnique.ParaAcesso(iAcessoPadrao);
+            acessoAdd.NavegacaoUsuario = inclUsuario;
+            acessoAdd.datahora_criacao = dataAgr;
+            inclListaAcessos.Add(acessoAdd);
+        }
         await _contexto.Usuarios.AddAsync(inclUsuario);
-        await _contexto.Recursos.AddAsync(inclRecurso);
+        await _contexto.Acessos.AddRangeAsync(inclListaAcessos);
         await _contexto.SaveChangesAsync();
         return inclUsuario;
     }
-    public IList<Usuarios> RecuperarUsuariosPeloFiltro(FiltroUsuarioDTO filtro)
+    public async Task<Usuario> TornaAdministrador(int idUsuario)
+    {
+        var acessosUsuario = _contexto.Acessos.Where(x => x.usuario_id == idUsuario);
+        var dataAgr = DateTime.Now;
+        foreach (var iAcesso in acessosUsuario)
+        {
+            iAcesso.eh_habilitado = true;
+            iAcesso.datahora_modificacao = dataAgr;
+        }
+        _contexto.Acessos.UpdateRange(acessosUsuario);
+        await _contexto.SaveChangesAsync();
+        return _contexto.Usuarios.AsNoTracking().First(x => x.id == idUsuario);
+    }
+    public void AutorizaUsuario(UsuarioLogadoDTO usuario, int recursoCodEn)
+    {
+        var acessoUsuario = _contexto.Acessos.First(x => x.usuario_id == usuario.Id && x.recurso_cod_en == recursoCodEn);
+        bool autorizado = acessoUsuario.eh_habilitado ?? false;
+        var mensagens = new List<string>();
+        if (!autorizado)
+            { mensagens.Add(Mensagens.ACESSO_NEGADO); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.Unauthorized);
+    }
+    public void AutorizaUsuarioImportarExportar(UsuarioLogadoDTO usuario)
+    {
+        bool autorizado = usuario.CPF == _configuracoesServico.UsuarioImportarExportar.CPF;
+        var mensagens = new List<string>();
+        if (!(autorizado))
+            { mensagens.Add(Mensagens.ACESSO_NEGADO); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.Unauthorized);
+    }
+    public IList<Usuario> RecuperarUsuariosPeloFiltro(FiltroUsuarioDTO filtro)
     {
         var usuarios = _contexto.Usuarios
             .AsNoTracking()
@@ -72,9 +126,9 @@ public class UsuariosRepositorio
     {
         var mensagens = new List<string>();
         if (string.IsNullOrWhiteSpace(loginSenha.Login))
-            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Login", "o")); }
+            { mensagens.Add("Login obrigatório"); }
         if (string.IsNullOrWhiteSpace(loginSenha.Senha))
-            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Senha", "a")); }
+            { mensagens.Add("Senha obrigatória"); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
     }
     public void ValidarCadastreSe(CadUsuarioCadastreSeDTO cadUsuario)

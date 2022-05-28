@@ -7,5 +7,5 @@ public class UsuarioLogadoDTO
     public DateTime Data_nascimento { get; set; }
     public int Horas_diarias { get; set; }
     public string Login { get; set; }
-    public UsuarioRecursoDTO NavegacaoRecurso { get; set; }
+    public IList<AcessoUsuarioLogadoDTO> Acessos { get; set; }
 }
