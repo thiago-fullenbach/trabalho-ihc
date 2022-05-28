@@ -6,6 +6,7 @@ import Main from "../../../templates/Main/Main";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Table from "../../../templates/Table/Table";
 import { isFieldValid } from "../../../../../utils/valid";
+import { Navigate } from "react-router-dom";
 
 const headerProps = {
     icon: faUsers,
@@ -227,6 +228,11 @@ export default class EmployeeCrud extends React.Component {
         })
     }
 
+    gotoURL(user) {
+        let url = `/user/${user.id}`;
+        return <Navigate to={url} />
+    }
+
     renderTable() {
         return (
             <Table headings={
@@ -264,7 +270,7 @@ export default class EmployeeCrud extends React.Component {
                             <FontAwesomeIcon icon={faTrash} />
                         </button>
                         <button className="btn btn-primary ms-2"
-                            onClick={() => this.remove(user)}>
+                            onClick={() => this.gotoURL(user)}>
                             <FontAwesomeIcon icon={faClipboard} />
                         </button>
                     </td>

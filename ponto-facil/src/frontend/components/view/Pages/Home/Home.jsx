@@ -33,6 +33,15 @@ export default props => {
         return "warning"
     }
 
+    const getLocation = () => {
+        navigator.geolocation.getCurrentPosition(location => {
+            axios.get(`http://nominatim.openstreetmap.org/reverse?format=json&lat=${location.coords.latitude}&lon=${location.coords.longitude}&zoom=18&addressdetails=1`)
+                .then(response => {
+                    console.log(response.data)
+                })
+        })
+    }
+
     const renderRows = () => {
         return presencaList.map(presenca => {
             return (
@@ -72,7 +81,7 @@ export default props => {
                     </Table>
                 ) : (<h3 className="d-flex justify-content-center my-5 text-secondary">Não existem registros de presença para este usuário</h3>)}
 
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={getLocation}>
                     Registrar Presença
                 </button>
         </Main>

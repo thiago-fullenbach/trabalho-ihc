@@ -1,16 +1,6 @@
 {
   "funcionarios": [
     {
-      "id": 1,
-      "NomeFuncionario": "Thiago",
-      "SobrenomeFuncionario": "Fullenbach",
-      "RG": "385066934",
-      "CPF": "46747814816",
-      "DataNascimento": "1996-06-11",
-      "Login": "tfullenbach",
-      "Senha": "abc123"
-    },
-    {
       "NomeFuncionario": "Leandro",
       "SobrenomeFuncionario": "Alves",
       "RG": "123131231",
@@ -29,16 +19,6 @@
       "Login": "gfonseca",
       "Senha": "gfonseca",
       "id": 3
-    },
-    {
-      "NomeFuncionario": "Ana",
-      "SobrenomeFuncionario": "Solida",
-      "RG": "12321312",
-      "CPF": "312132121",
-      "DataNascimento": "1996-06-11",
-      "Login": "asolida",
-      "Senha": "asolida",
-      "id": 4
     }
   ],
   "presencas": [
