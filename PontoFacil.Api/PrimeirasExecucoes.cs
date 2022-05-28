@@ -7,14 +7,16 @@ using PontoFacil.Api.Modelo.Contexto;
 namespace PontoFacil.Api;
 public class PrimeirasExecucoes
 {
-    public PrimeirasExecucoes(WebApplicationBuilder builder, WebApplication app)
+    public PrimeirasExecucoes()
     {
-        _builder = builder;
-        _app = app;
-        _serviceProvider = app.Services.CreateScope().ServiceProvider;
+        var instcAplicacao = AplicacaoMementoSingleton.PegaInstancia();
+        _builder = instcAplicacao.Builder;
+        _app = instcAplicacao.App;
+        instcAplicacao.ServiceProvider = _app.Services.CreateScope().ServiceProvider;
+        _serviceProvider = instcAplicacao.ServiceProvider;
         _configServico = _serviceProvider.GetService<ConfiguracoesServico>();
         _usuarioRepositorio = _serviceProvider.GetService<UsuarioRepositorio>();
-        _ehBancoDadosRelacional = builder.Configuration["BancoDadosRelacional"] == "S";
+        _ehBancoDadosRelacional = _builder.Configuration["BancoDadosRelacional"] == "S";
     }
     private readonly WebApplicationBuilder _builder;
     private readonly WebApplication _app;

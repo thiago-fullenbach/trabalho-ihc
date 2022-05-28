@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoClienteParaServidor;
@@ -9,6 +10,7 @@ using PontoFacil.Api.Controlador.Repositorio;
 using PontoFacil.Api.Controlador.Repositorio.Comum;
 using PontoFacil.Api.Controlador.Repositorio.Convert;
 using PontoFacil.Api.Controlador.Repositorio.Convert.ConvertUnique;
+using PontoFacil.Api.Controlador.Servico;
 using PontoFacil.Api.Modelo;
 using PontoFacil.Api.Modelo.Contexto;
 
@@ -23,12 +25,14 @@ public class AutorizacaoController : ControllerBase
     private readonly UsuarioConvert _usuarioConvert;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
     private readonly PontoFacilContexto _contexto;
+    private readonly CriptografiaServico _criptografiaServico;
     public AutorizacaoController(UsuarioRepositorio usuarioRepositorio,
                                  SessaoRepositorio sessaoRepositorio,
                                  SessaoConvertUnique sessaoConvertUnique,
                                  UsuarioConvert usuarioConvert,
                                  UsuarioConvertUnique usuarioConvertUnique,
-                                 PontoFacilContexto contexto)
+                                 PontoFacilContexto contexto,
+                                 CriptografiaServico criptografiaServico)
     {
         _usuarioRepositorio = usuarioRepositorio;
         _sessaoRepositorio = sessaoRepositorio;
@@ -36,6 +40,7 @@ public class AutorizacaoController : ControllerBase
         _usuarioConvert = usuarioConvert;
         _usuarioConvertUnique = usuarioConvertUnique;
         _contexto = contexto;
+        _criptografiaServico = criptografiaServico;
     }
 
     [HttpPost]
@@ -44,13 +49,23 @@ public class AutorizacaoController : ControllerBase
     {
         _usuarioRepositorio.ValidarLoginSenhaObrigatorios(loginXSenha);
 
-        var usuario = _usuarioRepositorio.RecuperarUsuarioPeloLoginSenha(loginXSenha);
+        var usuario = await _usuarioRepositorio.RecuperarUsuarioPeloLoginSenha(loginXSenha);
         var sessao = await _sessaoRepositorio.AbrirSessao(usuario.id);
         var asEnviarPeloHeader = _sessaoConvertUnique.ParaSessaoEnvioHeaderDTO(sessao);
         var detalhesUsuario = _usuarioConvert.ParaUsuarioLogadoDTO(usuario);
         HttpContext.Response.Headers["sessao"] = JsonConvert.SerializeObject(asEnviarPeloHeader);
         HttpContext.Response.Headers["usuario"] = JsonConvert.SerializeObject(detalhesUsuario);
         var json = new DevolvidoMensagensDTO();
+        json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
+        return StatusCode((int)HttpStatusCode.OK, json);
+    }
+
+    [HttpGet]
+    [Route("hasheiaSenha")]
+    public IActionResult HasheiaSenha(string senhaRaw)
+    {
+        var json = new DevolvidoMensagensDTO();
+        json.Devolvido = _criptografiaServico.HashearSenha(senhaRaw);
         json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
         return StatusCode((int)HttpStatusCode.OK, json);
     }

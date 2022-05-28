@@ -15,6 +15,7 @@ public class ConfiguracoesServico
     public CultureInfo Cultura { get; set; }
     public CadUsuarioCadastreSeDTO UsuarioImportarExportar { get; set; }
     public CadUsuarioCadastreSeDTO UsuarioAdminRaiz { get; set; }
+    public bool EhAmbienteDesenvolvimento { get => Segredo.StartsWith("Sim"); }
     public ConfiguracoesServico(IConfiguration configuration)
     {
         _configuration = configuration;

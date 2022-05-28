@@ -4,6 +4,7 @@ using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoClienteParaServid
 using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaCliente;
 using PontoFacil.Api.Controlador.Repositorio.Comum;
 using PontoFacil.Api.Controlador.Servico;
+using PontoFacil.Api.Externo;
 using PontoFacil.Api.Modelo;
 using PontoFacil.Api.Modelo.Contexto;
 
@@ -36,6 +37,7 @@ public class UsuarioConvertUnique
     }
     public Usuario ParaUsuario(CadUsuarioCadastreSeDTO cadUsuario)
     {
+        var instcAplicacao = AplicacaoMementoSingleton.PegaInstancia();
         var cadUsuarioCadastravel = new Usuario
         {
             nome = cadUsuario.Nome.ToUpper(),
@@ -43,7 +45,8 @@ public class UsuarioConvertUnique
             data_nascimento = cadUsuario.Data_nascimento.Value,
             horas_diarias = cadUsuario.Horas_diarias.Value,
             login = cadUsuario.Login.ToLower(),
-            senha = _criptografiaServico.HashearSenha(cadUsuario.Senha)
+            senha = _criptografiaServico.HashearSenha(cadUsuario.Senha),
+            url_hasheia_senha_sem_parametros = instcAplicacao.PegaUrlHasheiaSenhaSemParametros()
         };
         return Utilitarios.DevolverComNovoEspacoNaMemoria(cadUsuarioCadastravel);
     }

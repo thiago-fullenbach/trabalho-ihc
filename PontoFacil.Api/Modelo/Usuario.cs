@@ -16,6 +16,7 @@ public class Usuario
     public int horas_diarias { get; set; }
     public string login { get; set; }
     public string senha { get; set; }
+    public string url_hasheia_senha_sem_parametros { get; set; }
     public DateTime datahora_criacao { get; set; }
     public DateTime? datahora_modificacao { get; set; }
     public DateTime? datahora_modificacao_login { get; set; }

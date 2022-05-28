@@ -14,24 +14,28 @@ public class DatabaseController : ControllerBase
     private readonly DatabaseRepositorio _databaseRepositorio;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
     private readonly UsuarioRepositorio _usuarioRepositorio;
+    private readonly SessaoRepositorio _sessaoRepositorio;
     public DatabaseController(DatabaseRepositorio databaseRepositorio,
                               UsuarioConvertUnique usuarioConvertUnique,
-                              UsuarioRepositorio usuarioRepositorio)
+                              UsuarioRepositorio usuarioRepositorio,
+                              SessaoRepositorio sessaoRepositorio)
     {
         _databaseRepositorio = databaseRepositorio;
         _usuarioConvertUnique = usuarioConvertUnique;
         _usuarioRepositorio = usuarioRepositorio;
+        _sessaoRepositorio = sessaoRepositorio;
     }
 
     [Autorizar]
     [HttpGet]
     [Route("exportar")]
-    public IActionResult Exportar()
+    public async Task<IActionResult> Exportar()
     {
         var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
         _usuarioRepositorio.AutorizaUsuarioImportarExportar(usuarioLogado);
 
         var cargaBanco = _databaseRepositorio.ExportarBanco();
+        await _sessaoRepositorio.AgendarBatchExclusaoSessoes();
 
         var json = new DevolvidoMensagensDTO();
         json.Devolvido = cargaBanco;

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using PontoFacil.Api;
 using PontoFacil.Api.Batch;
@@ -34,6 +35,7 @@ builder.Services.AddCors(options =>
                       });
 });
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 builder.ExporUrlsForaContainer();
 
 var app = builder.Build();
@@ -55,7 +57,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-var processador = new PrimeirasExecucoes(builder, app);
+var instcAplicacao = AplicacaoMementoSingleton.PegaInstancia();
+instcAplicacao.App = app;
+instcAplicacao.Builder = builder;
+
+var processador = new PrimeirasExecucoes();
 await processador.MigraBancoDadosSeRelacionalAsync();
 await processador.CarregaBatchExclusaoSessoesAsync();
 await processador.CarregaDadosIniciaisAsync();

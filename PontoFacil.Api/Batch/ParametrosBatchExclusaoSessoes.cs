@@ -2,7 +2,7 @@ namespace PontoFacil.Api.Batch;
 public class ParametrosBatchExclusaoSessoes
 {
     public static IList<string> UrlsServidor { get; set; }
-    public static string? UrlHttpsServidor
+    public static string UrlHttpsServidor
     {
         get
         {
@@ -11,7 +11,7 @@ public class ParametrosBatchExclusaoSessoes
             return string.Empty;
         }
     }
-    public static string? UrlHttpServidor
+    public static string UrlHttpServidor
     {
         get
         {

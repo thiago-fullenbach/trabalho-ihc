@@ -8,6 +8,7 @@ using PontoFacil.Api.Controlador.ExposicaoDeEndpoints.v1.DTO.DoServidorParaClien
 using PontoFacil.Api.Controlador.Repositorio.Comum;
 using PontoFacil.Api.Controlador.Repositorio.Convert.ConvertUnique;
 using PontoFacil.Api.Controlador.Servico;
+using PontoFacil.Api.Externo;
 using PontoFacil.Api.Modelo;
 using PontoFacil.Api.Modelo.Contexto;
 using Valida.CPF.CNPJ;
@@ -32,17 +33,32 @@ public class UsuarioRepositorio
         _usuarioConvertUnique = usuarioConvertUnique;
         _acessoConvertUnique = acessoConvertUnique;
     }
-    public Usuario RecuperarUsuarioPeloLoginSenha(LoginXSenhaDTO loginSenha)
+    public async Task<Usuario> RecuperarUsuarioPeloLoginSenha(LoginXSenhaDTO loginSenha)
     {
-        string senhaHasheada = _criptografiaServico.HashearSenha(loginSenha.Senha);
         var usuario = _contexto.Usuarios
             .AsNoTracking()
-            .FirstOrDefault(x => x.login == loginSenha.Login
-            && x.senha == senhaHasheada);
+            .FirstOrDefault(x => x.login == loginSenha.Login);
         var mensagens = new List<string>();
         if (usuario == null)
             { mensagens.Add("Login ou senha inválidos."); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+        var chamadaApi = new ChamadaApi();
+        chamadaApi.ChamadaApiStateCriado = chamadaApi.CriaStatePelaUrlHasheiaSenhaSemParametros(usuario.url_hasheia_senha_sem_parametros);
+        string senhaHasheada = await chamadaApi.HasheiaSenha(loginSenha.Senha);
+        if (senhaHasheada != usuario.senha)
+            { mensagens.Add("Login ou senha inválidos."); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+        
+        var instcAplicacao = AplicacaoMementoSingleton.PegaInstancia();
+        var updtUrlHasheiaSenhaSemParametros = instcAplicacao.PegaUrlHasheiaSenhaSemParametros();
+        if (chamadaApi.ChamadaApiStateCriado.PegaUrlHasheiaSenhaSemParametros() != updtUrlHasheiaSenhaSemParametros)
+        {
+            var updtUsuario = _contexto.Usuarios.First(x => x.login == loginSenha.Login);
+            updtUsuario.senha = _criptografiaServico.HashearSenha(loginSenha.Senha);
+            updtUsuario.url_hasheia_senha_sem_parametros = updtUrlHasheiaSenhaSemParametros;
+            _contexto.Usuarios.Update(updtUsuario);
+            await _contexto.SaveChangesAsync();
+        }
 
         return usuario;
     }

@@ -22,7 +22,7 @@ public static class InjecaoDependencia
     {
         services.AddDbContext<PontoFacilContexto>(options => {
             options.UseMySql(conexao, ServerVersion.AutoDetect(conexao));
-        }, ServiceLifetime.Singleton);
+        });
         return services;
     }
     public static IServiceCollection AdicionarContextoDeConexaoInMemory(this IServiceCollection services)
@@ -34,27 +34,27 @@ public static class InjecaoDependencia
     }
     public static IServiceCollection AdicionarBibliotecaDeServicos(this IServiceCollection services)
     {
-        services.AddSingleton<ConfiguracoesServico>();
-        services.AddSingleton<CriptografiaServico>();
+        services.AddScoped<ConfiguracoesServico>();
+        services.AddScoped<CriptografiaServico>();
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeConversoesUnicas(this IServiceCollection services)
     {
-        services.AddSingleton<UsuarioConvertUnique>();
-        services.AddSingleton<SessaoConvertUnique>();
-        services.AddSingleton<AcessoConvertUnique>();
+        services.AddScoped<UsuarioConvertUnique>();
+        services.AddScoped<SessaoConvertUnique>();
+        services.AddScoped<AcessoConvertUnique>();
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeConversoes(this IServiceCollection services)
     {
-        services.AddSingleton<UsuarioConvert>();
+        services.AddScoped<UsuarioConvert>();
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeRepositorios(this IServiceCollection services)
     {
-        services.AddSingleton<UsuarioRepositorio>();
-        services.AddSingleton<SessaoRepositorio>();
-        services.AddSingleton<DatabaseRepositorio>();
+        services.AddScoped<UsuarioRepositorio>();
+        services.AddScoped<SessaoRepositorio>();
+        services.AddScoped<DatabaseRepositorio>();
         return services;
     }
 }
