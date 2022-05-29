@@ -5,6 +5,7 @@ import axios from 'axios';
 import { faHome, faClock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Table from "../../../templates/Table/Table";
+import { getSessionStorageOrDefault } from '../../../../../utils/useSessionStorage';
 
 const headerProps = {
     icon: faHome,
@@ -19,6 +20,7 @@ const initialProps = {
 
 export default props => {
     const [presencaList, setPresencaList] = useState(initialProps.list)
+    const signedInUser = getSessionStorageOrDefault('user')
 
     useEffect(() => {
         axios(baseUrl).then(resp => {
@@ -65,7 +67,7 @@ export default props => {
 
     return (
         <Main {...headerProps} >
-                <div className="display-4">user_name</div>
+                <div className="display-4">{signedInUser.Nome}</div>
                 <hr />
                 
                 {presencaList.length > 0 ? (

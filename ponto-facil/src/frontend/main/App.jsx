@@ -1,21 +1,19 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import React from 'react'
+import { Route, Routes } from 'react-router-dom';
 
-import Logo from '../components/templates/Logo/Logo'
-import Nav from '../components/templates/Nav/Nav'
-import Routes from './Routes';
-import Footer from '../components/templates/Footer/Footer'
+import Login from '../components/view/Pages/Login/Login';
+import TemplatePage from '../components/view/Pages/TemplatePage'
 
 export default props => {
 
     return (
-        <div className="app">
-            <Logo></Logo>
-            <Nav></Nav>
-            <Routes />
-            <Footer></Footer>
-        </div>
+        <Routes>
+            <Route exact path="/" element={<Login />} />
+            <Route path="/main/*" element={<TemplatePage />} />
+            <Route exact path="*" element={<Login />} />
+        </Routes>
     )
 }
     

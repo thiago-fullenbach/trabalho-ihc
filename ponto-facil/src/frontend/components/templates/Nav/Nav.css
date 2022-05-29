@@ -17,13 +17,39 @@ aside.menu-area {
     background-color: var(--cor-auxiliar-1);
 }
 
+.menu-toggle {
+    display: none;
+}
+
+.menu-links {
+    display: flex;
+    width: 100%;
+}
+
+.logout-btn {
+    background-color: transparent;
+    color: var(--cor-secundaria);
+    border: none;
+    text-align: left;
+    padding: 15px;
+}
+
+.logout-btn:hover {
+    background-color: var(--cor-auxiliar-1);
+}
+
+@media(min-width: 768px) {
+    .menu-links {
+        flex-direction: column;
+    }
+}
+
 @media(max-width: 768px) {
     .menu {
         display: flex;
         justify-content: space-around;
-        
+        flex-direction: row;
         align-items: center;
-
         height: 100%;
     }
 
@@ -31,6 +57,11 @@ aside.menu-area {
         display: inline;
         padding: 10px;
         margin: 0px;
+    }
+
+    .menu-links {
+        justify-content: space-around;
+        align-items: center;
     }
 }
 
@@ -42,12 +73,17 @@ aside.menu-area {
     .menu a {
         width: 100%;
         text-align: center;
+        padding: 5px;
     }
 
-    .app {
+    .menu-links {
+        flex-direction: column;
+    }
+
+    .tp-page {
         grid-template-rows: 
             var(--logo-height)
-            1fr
+            auto
             1fr
             var(--footer-height);
         grid-template-columns: 1fr;
@@ -56,5 +92,23 @@ aside.menu-area {
             "menu"
             "content"
             "footer";
+    }
+
+    .menu-toggle {
+        display: block;
+        background-color: transparent;
+        border: none;
+        color: var(--cor-secundaria);
+        font-size: 1.4em;
+
+        align-self: flex-start;
+    }
+
+    .menu-hide {
+        display: none;
+    }
+
+    .menu-show {
+        display: flex;
     }
 }

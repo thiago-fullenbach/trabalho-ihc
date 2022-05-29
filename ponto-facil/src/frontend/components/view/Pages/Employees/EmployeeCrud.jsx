@@ -114,29 +114,19 @@ export default class EmployeeCrud extends React.Component {
                         <div className="form-group">
 
                             <div className="input-group row">
-                                <div className="input col-6">
+                                <div className="input col-md-6 col-12 mt-3">
                                     <label>Nome</label>
                                     <input type="text" 
-                                        className="form-control col-6" 
+                                        className="form-control" 
                                         name="NomeFuncionario"
                                         value={this.state.user.NomeFuncionario}
                                         onChange={e => this.updateField(e)}
                                         placeholder="Digite o nome..."/>
                                 </div>
-
-                                <div className="input col-6">
-                                    <label>Sobrenome</label>
-                                    <input type="text"
-                                        className="form-control" 
-                                        name="SobrenomeFuncionario"
-                                        value={this.state.user.SobrenomeFuncionario}
-                                        onChange={e => this.updateField(e)}
-                                        placeholder="Digite o sobrenome..."/>
-                                </div>
                             </div>
 
                             <div className="input-group row">
-                                <div className="input col-6">
+                                <div className="input col-md-6 col-12 mt-3">
                                     <label>RG</label>
                                     <input type="text"
                                         className="form-control" 
@@ -147,7 +137,7 @@ export default class EmployeeCrud extends React.Component {
                                         disabled={disabled}/>
                                 </div>
 
-                                <div className="input col-6">
+                                <div className="input col-md-6 col-12 mt-3">
                                         <label>CPF</label>
                                         <input type="text"
                                             className="form-control" 
@@ -160,7 +150,7 @@ export default class EmployeeCrud extends React.Component {
                             </div>
 
                             <div className="input-group row">
-                                <div className="input col-6">
+                                <div className="input col-md-6 col-12 mt-3">
                                     <label>Login</label>
                                     <input type="text"
                                         className="form-control" 
@@ -171,7 +161,7 @@ export default class EmployeeCrud extends React.Component {
                                         disabled={disabled}/>
                                 </div>
 
-                                <div className="input col-6">
+                                <div className="input col-md-6 col-12 mt-3">
                                         <label>Senha</label>
                                         <input type="text"
                                             className="form-control" 
@@ -184,7 +174,7 @@ export default class EmployeeCrud extends React.Component {
                             </div>
 
                             <div className="input-group row">
-                                <div className="input col-6">
+                                <div className="input col-md-6 col-12 mt-3">
                                         <label>Data de Nascimento</label>
                                         <input type="date"
                                             className="form-control" 
@@ -239,7 +229,6 @@ export default class EmployeeCrud extends React.Component {
                 [
                     "#", 
                     "Nome", 
-                    "Sobrenome", 
                     "RG", 
                     "CPF",
                     "Data de Nascimento"
@@ -256,7 +245,6 @@ export default class EmployeeCrud extends React.Component {
                 <tr key={user.id}>
                     <td>{user.id}</td>
                     <td>{user.NomeFuncionario}</td>
-                    <td>{user.SobrenomeFuncionario}</td>
                     <td>{user.RG}</td>
                     <td>{user.CPF}</td>
                     <td>{user.DataNascimento}</td>
