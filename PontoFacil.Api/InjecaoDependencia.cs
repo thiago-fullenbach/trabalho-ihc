@@ -48,6 +48,7 @@ public static class InjecaoDependencia
     public static IServiceCollection AdicionarBibliotecaDeConversoes(this IServiceCollection services)
     {
         services.AddScoped<UsuarioConvert>();
+        services.AddScoped<AcessoConvert>();
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeRepositorios(this IServiceCollection services)
@@ -55,6 +56,7 @@ public static class InjecaoDependencia
         services.AddScoped<UsuarioRepositorio>();
         services.AddScoped<SessaoRepositorio>();
         services.AddScoped<DatabaseRepositorio>();
+        services.AddScoped<AcessoRepositorio>();
         return services;
     }
 }

@@ -33,4 +33,15 @@ public class UsuarioConvert
             { usuarioLogado.Acessos.Add(_acessoConvertUnique.ParaAcessoUsuarioLogadoDTO(iAcesso)); }
         return usuarioLogado;
     }
+    public DetalheUsuarioDTO ParaDetalheUsuarioDTO(Usuario usuario)
+    {
+        var detalheUsuario = _usuarioConvertUnique.ParaDetalheUsuarioDTO(usuario);
+        var acessosUsuario = _contexto.Acessos
+            .AsNoTracking()
+            .Where(x => x.usuario_id == usuario.id);
+        detalheUsuario.Acessos = new List<AcessoUsuarioDTO>();
+        foreach (var iAcesso in acessosUsuario)
+            { detalheUsuario.Acessos.Add(_acessoConvertUnique.ParaAcessoUsuarioDTO(iAcesso)); }
+        return detalheUsuario;
+    }
 }

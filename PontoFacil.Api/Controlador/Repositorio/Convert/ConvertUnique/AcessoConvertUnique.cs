@@ -24,6 +24,24 @@ public class AcessoConvertUnique
         };
         return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
     }
+    public AcessoUsuarioDTO ParaAcessoUsuarioDTO(Acesso acesso)
+    {
+        var resultado = new AcessoUsuarioDTO
+        {
+            Recurso_cod_en = acesso.recurso_cod_en,
+            Eh_habilitado = acesso.eh_habilitado
+        };
+        return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
+    }
+    public AcessoUsuarioDTO ParaAcessoUsuarioDTO(AcessoUsuarioLogadoDTO acesso)
+    {
+        var resultado = new AcessoUsuarioDTO
+        {
+            Recurso_cod_en = acesso.Recurso_cod_en,
+            Eh_habilitado = acesso.Eh_habilitado
+        };
+        return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
+    }
     public static IList<AcessoUsuarioLogadoDTO> AcessosPadrao
     {
         get
@@ -89,6 +107,15 @@ public class AcessoConvertUnique
         }
     }
     public Acesso ParaAcesso(AcessoUsuarioLogadoDTO acesso)
+    {
+        var resultado = new Acesso
+        {
+            recurso_cod_en = acesso.Recurso_cod_en,
+            eh_habilitado = acesso.Eh_habilitado
+        };
+        return Utilitarios.DevolverComNovoEspacoNaMemoria(resultado);
+    }
+    public Acesso ParaAcesso(AcessoUsuarioDTO acesso)
     {
         var resultado = new Acesso
         {

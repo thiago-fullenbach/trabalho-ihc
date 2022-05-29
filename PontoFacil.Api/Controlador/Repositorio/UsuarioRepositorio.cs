@@ -122,6 +122,96 @@ public class UsuarioRepositorio
             && (string.IsNullOrWhiteSpace(filtro.Login) || x.login.Contains(filtro.Login)));
         return Utilitarios.ParaLista(usuarios);
     }
+    public IList<UsuarioPesquisadoDTO> UsuariosExceto(List<UsuarioPesquisadoDTO> usuarios, int idUsuario)
+    {
+        var listaUsuarios = new List<UsuarioPesquisadoDTO>();
+        foreach (var iUsuario in usuarios)
+        {
+            if (iUsuario.Id != idUsuario)
+                { listaUsuarios.Add(iUsuario); }
+        }
+        return listaUsuarios;
+    }
+    public IList<UsuarioPesquisadoDTO> UsuariosApenas(List<UsuarioPesquisadoDTO> usuarios, int idUsuario)
+    {
+        var listaUsuarios = new List<UsuarioPesquisadoDTO>();
+        foreach (var iUsuario in usuarios)
+        {
+            if (iUsuario.Id == idUsuario)
+                { listaUsuarios.Add(iUsuario); }
+        }
+        return listaUsuarios;
+    }
+    public Usuario PegaUsuarioPeloId(int id)
+    {
+        var usuario = _contexto.Usuarios.AsNoTracking().FirstOrDefault(x => x.id == id);
+        var mensagens = new List<string>();
+        if (usuario == null)
+            { mensagens.Add("Usuário não encontrado."); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+        return usuario;
+    }
+    public async Task ExcluiUsuarioPeloId(int id)
+    {
+        var exclUsuario = _contexto.Usuarios.FirstOrDefault(x => x.id == id);
+        var mensagens = new List<string>();
+        if (exclUsuario == null)
+            { mensagens.Add("Usuário não encontrado."); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+
+        _contexto.Usuarios.Remove(exclUsuario);
+        await _contexto.SaveChangesAsync();
+    }
+    public async Task<Usuario> CriaNovoUsuario(NovoUsuarioDTO novoUsuario)
+    {
+        var usuarioCadastrese = _usuarioConvertUnique.ParaCadUsuarioCadastreSeDTO(novoUsuario);
+        var inclUsuario = _usuarioConvertUnique.ParaUsuario(usuarioCadastrese);
+        var dataAgr = DateTime.Now;
+        inclUsuario.datahora_criacao = dataAgr;
+        inclUsuario.eh_senha_temporaria = true;
+        var acessos = novoUsuario.Acessos;
+        var inclListaAcessos = new List<Acesso>();
+        foreach (var iAcesso in acessos)
+        {
+            var acessoAdd = _acessoConvertUnique.ParaAcesso(iAcesso);
+            acessoAdd.NavegacaoUsuario = inclUsuario;
+            acessoAdd.datahora_criacao = dataAgr;
+            inclListaAcessos.Add(acessoAdd);
+        }
+        await _contexto.Usuarios.AddAsync(inclUsuario);
+        await _contexto.Acessos.AddRangeAsync(inclListaAcessos);
+        await _contexto.SaveChangesAsync();
+        return inclUsuario;
+    }
+    public async Task<Usuario> AtualizaUsuario(EditarUsuarioDTO editarUsuario)
+    {
+        var updtUsuario = _contexto.Usuarios.First(x => x.id == editarUsuario.Id);
+        var dataAgr = DateTime.Now;
+        var editarUsuarioUpdate = _usuarioConvertUnique.ParaUsuario(editarUsuario);
+        updtUsuario.nome = editarUsuarioUpdate.nome;
+        updtUsuario.cpf = editarUsuarioUpdate.cpf;
+        updtUsuario.data_nascimento = editarUsuarioUpdate.data_nascimento;
+        updtUsuario.horas_diarias = editarUsuarioUpdate.horas_diarias;
+        updtUsuario.login = editarUsuarioUpdate.login;
+        if (!string.IsNullOrWhiteSpace(editarUsuarioUpdate.senha))
+        {
+            updtUsuario.senha = editarUsuarioUpdate.senha;
+            updtUsuario.url_hasheia_senha_sem_parametros = editarUsuarioUpdate.url_hasheia_senha_sem_parametros;
+        }
+        updtUsuario.datahora_modificacao = dataAgr;
+        updtUsuario.eh_senha_temporaria = false;
+        var updtAcessos = _contexto.Acessos.Where(x => x.usuario_id == editarUsuario.Id);
+        foreach (var iUpdtAcesso in updtAcessos)
+        {
+            var acessoEditarUsuario = editarUsuario.Acessos.First(x => x.Recurso_cod_en == iUpdtAcesso.recurso_cod_en);
+            iUpdtAcesso.eh_habilitado = acessoEditarUsuario.Eh_habilitado;
+            iUpdtAcesso.datahora_modificacao = dataAgr;
+        }
+        _contexto.Acessos.UpdateRange(updtAcessos);
+        _contexto.Usuarios.Update(updtUsuario);
+        await _contexto.SaveChangesAsync();
+        return updtUsuario;
+    }
     public void ValidarLoginSenhaObrigatorios(LoginXSenhaDTO loginSenha)
     {
         var mensagens = new List<string>();
@@ -151,11 +241,11 @@ public class UsuarioRepositorio
         if (!cadUsuario.Data_nascimento.HasValue)
             { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Data de Nascimento", "a")); }
         if (!cadUsuario.Horas_diarias.HasValue)
-            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Quantidade de Horas Diárias", "a")); }
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Horas Diárias", "a")); }
         if (string.IsNullOrWhiteSpace(cadUsuario.Login))
             { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Login", "o")); }
         if (string.IsNullOrWhiteSpace(cadUsuario.Senha))
-            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Senha", "a")); }
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Nova Senha", "a")); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
     }
     public void ValidarNomeCadUsuario(string? nome)
@@ -165,9 +255,9 @@ public class UsuarioRepositorio
             { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Nome", "o")); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
         
-        if (nome.Length < 4)
-            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY_MOTIVO_ZZZZ, "Nome", "o", "deve possuir pelo menos 4 caracteres")); }
-        if (Regex.IsMatch(nome, "[^A-Za-z.]+"))
+        if (nome.Length < 2)
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY_MOTIVO_ZZZZ, "Nome", "o", "deve possuir pelo menos 2 caracteres")); }
+        if (Regex.IsMatch(nome, "[^A-Za-z. ]+"))
             { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY_MOTIVO_ZZZZ, "Nome", "o", "aceita apenas letras e ponto (.)")); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
     }
@@ -252,6 +342,83 @@ public class UsuarioRepositorio
         var mensagens = new List<string>();
         if (!ValidaCPFCNPJ.ValidaCPF(filtro.CPF.Replace(".", "").Replace("-", "")))
             { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "CPF", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+    }
+    public void ValidaEditarUsuario(EditarUsuarioDTO editarUsuario)
+    {
+        ValidaEditarUsuarioObrigatorios(editarUsuario);
+        ValidarNomeCadUsuario(editarUsuario.Nome);
+        ValidaCpfEditarUsuario(editarUsuario.CPF, editarUsuario.Id);
+        ValidaDataNascimentoEditarUsuario(editarUsuario.Data_nascimento, editarUsuario.Id);
+        ValidarHorasDiariasCadUsuario(editarUsuario.Horas_diarias);
+        ValidaLoginEditarUsuario(editarUsuario.Login, editarUsuario.Id);
+        if (!string.IsNullOrWhiteSpace(editarUsuario.Nova_senha))
+            { ValidarSenhaCadUsuario(editarUsuario.Nova_senha); }
+    }
+    public void ValidaEditarUsuarioObrigatorios(EditarUsuarioDTO editarUsuario)
+    {
+        var mensagens = new List<string>();
+        PegaUsuarioPeloId(editarUsuario.Id);
+        if (string.IsNullOrWhiteSpace(editarUsuario.Nome))
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Nome", "o")); }
+        if (string.IsNullOrWhiteSpace(editarUsuario.CPF))
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "CPF", "o")); }
+        if (editarUsuario.Data_nascimento == default(DateTime))
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Data de Nascimento", "a")); }
+        if (editarUsuario.Horas_diarias == 0)
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Horas Diárias", "a")); }
+        if (string.IsNullOrWhiteSpace(editarUsuario.Login))
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Login", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+    }
+    public void ValidaCpfEditarUsuario(string? cpf, int idUsuarioEditado)
+    {
+        var mensagens = new List<string>();
+        if (string.IsNullOrWhiteSpace(cpf))
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "CPF", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+        
+        if (!ValidaCPFCNPJ.ValidaCPF(cpf.Replace(".", "").Replace("-", "")))
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "CPF", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+
+        var filtroCpf = _usuarioConvertUnique.ParaFiltroUsuarioDTOPesquisavel(new FiltroUsuarioDTO { CPF = cpf });
+        var listaUsuario = RecuperarUsuariosPeloFiltro(filtroCpf);
+        if (listaUsuario.Where(x => x.id != idUsuarioEditado).Any())
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY_MOTIVO_ZZZZ, "CPF", "o", "esse CPF está em uso por outro usuário.")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+    }
+    public void ValidaDataNascimentoEditarUsuario(DateTime dataNascimento, int idUsuarioEditado)
+    {
+        var usuarioBanco = PegaUsuarioPeloId(idUsuarioEditado);
+        var mensagens = new List<string>();
+        if (dataNascimento == default(DateTime))
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Data de Nascimento", "a")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+        
+        var dataHj = DateTime.Today;
+        var menorDataNasc = new DateTime(dataHj.Year - 160, dataHj.Month, dataHj.Day);
+        if ((dataNascimento < menorDataNasc && dataNascimento != usuarioBanco.data_nascimento) || dataNascimento > dataHj)
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY, "Data de Nascimento", "a")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+    }
+    public void ValidaLoginEditarUsuario(string? login, int idUsuarioEditado)
+    {
+        var mensagens = new List<string>();
+        if (string.IsNullOrWhiteSpace(login))
+            { mensagens.Add(string.Format(Mensagens.XXXX_OBRIGATORIY, "Login", "o")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+        
+        if (login.Length < 8)
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY_MOTIVO_ZZZZ, "Login", "o", "deve possuir pelo menos 8 caracteres")); }
+        if (Regex.IsMatch(login, "[^A-Za-z0-9_.]+"))
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY_MOTIVO_ZZZZ, "Login", "o", "aceita apenas letras, números, underline (_) e ponto (.)")); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
+
+        var filtroLogin = _usuarioConvertUnique.ParaFiltroUsuarioDTOPesquisavel(new FiltroUsuarioDTO { Login = login });
+        var listaUsuario = RecuperarUsuariosPeloFiltro(filtroLogin);
+        if (listaUsuario.Where(x => x.id != idUsuarioEditado).Any())
+            { mensagens.Add(string.Format(Mensagens.XXXX_INVALIDY_MOTIVO_ZZZZ, "Login", "o", "esse Login está em uso por outro usuário.")); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.BadRequest);
     }
 }
