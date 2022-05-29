@@ -33,12 +33,14 @@ export default props => {
     const handleSubmit = e => {
         e.preventDefault();
         (async () => {
-            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, setUsuarioLogado, userName, password)
-            if(r.int_status === 404) {
+            try {
+                let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, setUsuarioLogado, userName, password)
+                if(r.int_status !== 404) {
+                    setSessao(r.SessaoDTO_sessao)
+                    navigate("/main/home")
+                }
+            } catch(e) {
                 setMsgError("Login ou Senha inválidos")
-            } else {
-                setSessao(r.SessaoDTO_sessao)
-                navigate("/main/home")
             }
         })()
     }
