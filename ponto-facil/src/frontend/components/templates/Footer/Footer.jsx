@@ -8,7 +8,7 @@ export default props => {
     return (
         <footer className="footer">
             <span>
-                Desenvolvido com <FontAwesomeIcon icon={faHeart} className="text-danger" /> pelo melhor grupo de IHC.
+                Disciplina IHC - 1º Semestre de 2022
             </span>
         </footer>
     )

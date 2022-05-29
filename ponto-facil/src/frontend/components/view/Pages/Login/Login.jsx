@@ -4,28 +4,34 @@ import React, { useState } from "react";
 import Card from '../../../templates/Card/Card';
 import Input from '../../../templates/Input/Input';
 import Button from '../../../templates/Button/Button';
+import MsgDialog from '../../../templates/MsgDialog/MsgDialog';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 
 import ApiUtil from '../../../../../chamada-api/ApiUtil';
 
+import { useNavigate } from 'react-router-dom';
+import { useSessionStorage } from '../../../../../utils/useSessionStorage';
+
 export default props => {
+    const navigate = useNavigate()
+
     const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')
+    const [msgError, setMsgError] = useState('')
 
-    const [sessao, setSessao] = React.useState({});
-    const [usuarioLogado, setUsuarioLogado] = React.useState({});
+    const [sessao, setSessao] = useSessionStorage('session', {});
 
     const handleSubmit = e => {
         e.preventDefault();
-        console.log("Validar Usuário e Senha");
         (async () => {
-            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, setUsuarioLogado, userName, password);
-            console.log(r);
-            if (r.int_status == 404)
-            {
-                 // 
+            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, userName, password)
+            if(r.int_status === 404) {
+                setMsgError("Login ou Senha inválidos")
+            } else {
+                setSessao(r.SessaoDTO_sessao)
+                navigate("/main/home")
             }
-        })();
+        })()
     }
 
     return (
@@ -42,6 +48,10 @@ export default props => {
                     </div>
                 </form>
             </Card>
+            { msgError && 
+                <MsgDialog typeAlert="danger" msgType="Erro no Login" msg={msgError}/>
+            }
+            
         </div>
     )
 }
