@@ -11,6 +11,8 @@ import ApiUtil from '../../../../../chamada-api/ApiUtil';
 
 import { useNavigate } from 'react-router-dom';
 import { useSessionStorage } from '../../../../../utils/useSessionStorage';
+import { useEffect } from 'react';
+import { isNullOrEmpty } from '../../../../../utils/valid';
 
 export default props => {
     const navigate = useNavigate()
@@ -19,12 +21,19 @@ export default props => {
     const [password, setPassword] = useState('')
     const [msgError, setMsgError] = useState('')
 
-    const [sessao, setSessao] = useSessionStorage('session', {});
+    const [sessao, setSessao] = useSessionStorage('session', null);
+    const [usuarioLogado, setUsuarioLogado] = useSessionStorage('user', null);
+
+    useEffect(() => {
+        if(!isNullOrEmpty(usuarioLogado)) {
+            navigate("/main/home")
+        }
+    }, [usuarioLogado])
 
     const handleSubmit = e => {
         e.preventDefault();
         (async () => {
-            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, userName, password)
+            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, setUsuarioLogado, userName, password)
             if(r.int_status === 404) {
                 setMsgError("Login ou Senha inválidos")
             } else {
@@ -42,7 +51,6 @@ export default props => {
                         placeholder="E-mail ou usuário" />
                     <Input label="Senha" type="password" value={password} onChange={e => setPassword(e.target.value)} 
                         placeholder="Senha"/>
-
                     <div className="button-group">
                         <Button onClick={handleSubmit} type="submit">Acessar</Button>
                     </div>

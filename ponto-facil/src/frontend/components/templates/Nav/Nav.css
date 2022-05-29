@@ -26,6 +26,18 @@ aside.menu-area {
     width: 100%;
 }
 
+.logout-btn {
+    background-color: transparent;
+    color: var(--cor-secundaria);
+    border: none;
+    text-align: left;
+    padding: 15px;
+}
+
+.logout-btn:hover {
+    background-color: var(--cor-auxiliar-1);
+}
+
 @media(min-width: 768px) {
     .menu-links {
         flex-direction: column;

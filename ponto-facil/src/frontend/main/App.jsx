@@ -8,13 +8,11 @@ import TemplatePage from '../components/view/Pages/TemplatePage'
 
 export default props => {
 
-    const [sessao, setSessao] = React.useState({});
-
     return (
         <Routes>
-            <Route exact path="/" element={<Login enviarSessao={sessao} enviarSetSessao={setSessao} />} />
-            <Route path="/main/*" element={<TemplatePage enviarSessao={sessao} enviarSetSessao={setSessao} />} />
-            <Route exact path="*" element={<Login enviarSessao={sessao} enviarSetSessao={setSessao} />} />
+            <Route exact path="/" element={<Login />} />
+            <Route path="/main/*" element={<TemplatePage />} />
+            <Route exact path="*" element={<Login />} />
         </Routes>
     )
 }

@@ -12,6 +12,7 @@ class ApiUtil {
 
     static async RespostaDoServidor_submitEntrarAsync(
         SetSessaoDTOHandler_setSessao,
+        SetUsuarioLogadoDTOHandler_setUsuarioLogado,
         string_login,
         string_senha
     ) {
@@ -23,6 +24,7 @@ class ApiUtil {
         );
         let RespostaDoServidor_retorno = RespostaDoServidor.parse(AxiosResponse_resposta);
         SetSessaoDTOHandler_setSessao(RespostaDoServidor_retorno.SessaoDTO_sessao);
+        SetUsuarioLogadoDTOHandler_setUsuarioLogado(RespostaDoServidor_retorno.UsuarioLogadoDTO_usuario);
         return RespostaDoServidor_retorno;
     }
 
