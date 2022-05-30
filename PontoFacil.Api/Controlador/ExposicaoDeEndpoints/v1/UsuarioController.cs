@@ -7,6 +7,7 @@ using PontoFacil.Api.Controlador.Repositorio;
 using PontoFacil.Api.Controlador.Repositorio.Comum;
 using PontoFacil.Api.Controlador.Repositorio.Convert;
 using PontoFacil.Api.Controlador.Repositorio.Convert.ConvertUnique;
+using PontoFacil.Api.Controlador.Servico;
 using PontoFacil.Api.Modelo;
 using PontoFacil.Api.Modelo.Dominios;
 
@@ -21,12 +22,14 @@ public class UsuarioController : ControllerBase
     private readonly UsuarioConvert _usuarioConvert;
     private readonly AcessoConvertUnique _acessoConvertUnique;
     private readonly UsuarioConvertUnique _usuarioConvertUnique;
+    private readonly ConfiguracoesServico _configuracoesServico;
     public UsuarioController(AcessoRepositorio acessoRepositorio,
                              UsuarioRepositorio usuarioRepositorio,
                              AcessoConvert acessoConvert,
                              UsuarioConvert usuarioConvert,
                              AcessoConvertUnique acessoConvertUnique,
-                             UsuarioConvertUnique usuarioConvertUnique)
+                             UsuarioConvertUnique usuarioConvertUnique,
+                             ConfiguracoesServico configuracoesServico)
     {
         _acessoRepositorio = acessoRepositorio;
         _usuarioRepositorio = usuarioRepositorio;
@@ -34,6 +37,7 @@ public class UsuarioController : ControllerBase
         _usuarioConvert = usuarioConvert;
         _acessoConvertUnique = acessoConvertUnique;
         _usuarioConvertUnique = usuarioConvertUnique;
+        _configuracoesServico = configuracoesServico;
     }
 
     [Autorizar]
@@ -53,9 +57,22 @@ public class UsuarioController : ControllerBase
         if (!(_acessoConvert.UsuarioTemRecursoHabilitado(usuarioLogado, EnRecurso.VisualizarDemaisUsuarios)))
             { listaUsuariosEmDTO = new List<UsuarioPesquisadoDTO>(_usuarioRepositorio.UsuariosApenas(listaUsuariosEmDTO, usuarioLogado.Id)); }
         
+        int idUsuarioImportaExporta = PegaIdUsuarioImportaExporta();
+        listaUsuariosEmDTO = new List<UsuarioPesquisadoDTO>(_usuarioRepositorio.UsuariosExceto(listaUsuariosEmDTO, idUsuarioImportaExporta));
+
         var json = new DevolvidoMensagensDTO { Devolvido = listaUsuariosEmDTO };
         json.SetMensagemUnica(Mensagens.REQUISICAO_SUCESSO);
         return StatusCode((int)HttpStatusCode.OK, json);
+    }
+
+    [NonAction]
+    private int PegaIdUsuarioImportaExporta()
+    {
+        string cpfUsuarioImportaExporta = _configuracoesServico.UsuarioImportarExportar.CPF;
+        var filtroUsuarioImportaExporta = new FiltroUsuarioDTO { CPF = cpfUsuarioImportaExporta };
+        var usuarioImportaExporta = _usuarioRepositorio.RecuperarUsuariosPeloFiltro(filtroUsuarioImportaExporta);
+        int idUsuarioImportaExporta = usuarioImportaExporta.First().id;
+        return idUsuarioImportaExporta;
     }
     
     [Autorizar]
@@ -63,6 +80,11 @@ public class UsuarioController : ControllerBase
     [Route("pegaPeloId")]
     public IActionResult PegaPeloId(int id)
     {
+        var mensagens = new List<string>();
+        if (id == PegaIdUsuarioImportaExporta())
+            { mensagens.Add("Usuário não encontrado"); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+
         var usuario = _usuarioRepositorio.PegaUsuarioPeloId(id);
         var detalheUsuario = _usuarioConvert.ParaDetalheUsuarioDTO(usuario);
         var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
@@ -85,10 +107,14 @@ public class UsuarioController : ControllerBase
     [Route("excluiPeloId")]
     public async Task<IActionResult> ExcluiPeloId(int id)
     {
+        var mensagens = new List<string>();
+        if (id == PegaIdUsuarioImportaExporta())
+            { mensagens.Add("Usuário não encontrado"); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+
         var usuario = _usuarioRepositorio.PegaUsuarioPeloId(id);
         var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
 
-        var mensagens = new List<string>();
         if (usuario.id != usuarioLogado.Id && !(_acessoConvert.UsuarioTemRecursoHabilitado(usuarioLogado, EnRecurso.CadastrarDemaisUsuarios)))
             { mensagens.Add(Mensagens.ACESSO_NEGADO); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.Unauthorized);
@@ -134,6 +160,11 @@ public class UsuarioController : ControllerBase
     [Route("atualiza")]
     public async Task<IActionResult> Atualiza([FromBody]EditarUsuarioDTO editarUsuario)
     {
+        var mensagens = new List<string>();
+        if (editarUsuario.Id == PegaIdUsuarioImportaExporta())
+            { mensagens.Add("Usuário não encontrado"); }
+        NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
+
         var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
         _usuarioRepositorio.AutorizaUsuario(usuarioLogado, (int)EnRecurso.CadastrarDemaisUsuarios);
 
