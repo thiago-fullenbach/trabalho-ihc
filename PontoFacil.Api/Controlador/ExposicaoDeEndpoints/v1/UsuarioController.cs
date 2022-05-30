@@ -89,7 +89,6 @@ public class UsuarioController : ControllerBase
         var detalheUsuario = _usuarioConvert.ParaDetalheUsuarioDTO(usuario);
         var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
 
-        var mensagens = new List<string>();
         if (detalheUsuario.Id == usuarioLogado.Id && !(_acessoConvert.UsuarioTemRecursoHabilitado(usuarioLogado, EnRecurso.VisualizarUsuario)))
             { mensagens.Add(Mensagens.ACESSO_NEGADO); }
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.Unauthorized);
