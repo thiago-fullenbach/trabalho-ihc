@@ -26,7 +26,7 @@ export default props => {
                 <div className={`menu-links ${showMenu ? 'menu-show' : 'menu-hide'}`}>
                     <NavLink path="/main/home" icon={faHome} label="Início" />
                     <NavLink path="/main/employees" icon={faUserGroup} label="Funcionários" />
-                    <NavLink path="/main/config" icon={faWrench} label="Configurações" />
+                    {/* <NavLink path="/main/config" icon={faWrench} label="Configurações" /> */}
                     <button className='logout-btn' onClick={logout}>
                         <FontAwesomeIcon icon={faRightToBracket} /> Sair
                     </button>
