@@ -1,5 +1,5 @@
 .modal-container {
-  position: absolute;
+  position: fixed;
   background-color: rgba(0,0,0,0.3);
   width: 100vw;
   height: 100vh;
@@ -7,7 +7,8 @@
   justify-content: center;
   align-items: center;
 }
-
+/* 10 + 18 + 24 + 28 + 30 + 30 + 28 + 24 + 18 */
+/* 11 + 20 + 27 + 32 + 35 + 36 + 35 + 32 + 27 */
 .lds-ellipsis {
     display: inline-block;
     position: relative;

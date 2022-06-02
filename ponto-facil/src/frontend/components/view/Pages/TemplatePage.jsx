@@ -9,10 +9,13 @@ import Routes from '../../../main/Routes'
 import Footer from '../../templates/Footer/Footer'
 import { useEffect } from 'react';
 import { isNullOrEmpty } from '../../../../utils/valid';
+import LoadingModal from '../../templates/LoadingModal/LoadingModal';
 
 export default props => {
     const navigate = useNavigate()
     const signedInUser = getSessionStorageOrDefault('user')
+
+    const [carregando, setCarregando] = React.useState(false)
 
     useEffect(() => {
         if(isNullOrEmpty(signedInUser)) {
@@ -20,12 +23,15 @@ export default props => {
         }
     }, [signedInUser])
 
+    
+
     return (
         <div className="tp-page">
             <Logo></Logo>
             <Nav></Nav>
-            <Routes />
+            <Routes carregando={carregando} setCarregando={setCarregando} />
             <Footer></Footer>
+            {carregando && <LoadingModal/> }
         </div>
     )
 }

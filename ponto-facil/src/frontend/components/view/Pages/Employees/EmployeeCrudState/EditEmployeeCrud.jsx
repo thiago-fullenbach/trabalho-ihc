@@ -117,7 +117,7 @@ export default class EditEmployeeCrud extends React.Component {
                                     <input type="checkbox"
                                         checked={x.eh_habilitado}
                                         onChange={e => this.props.invoker.publicUpdateAccess(e, x.recurso_cod_en)}
-                                        disabled={!this.loggedUserHasEnabledResourceByDescription("CadastrarAcessoTodosUsuarios")} />
+                                        disabled={!this.loggedUserHasEnabledResourceByDescription("CadastrarAcessoTodosUsuarios") || this.getLoggedUser().Id === this.props.editUser.id} />
                                     <label className="ps-3">{this.props.resourceDescription.find(y => y.recurso_cod_en === x.recurso_cod_en).recurso_desc}</label>
                                 </div>
                             ))}

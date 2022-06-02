@@ -40,8 +40,8 @@ export default props => {
             let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, setUsuarioLogado, userName, password)
             setCarregando(false)
             if (r.status === 200) {
-                console.log(getSessionStorageOrDefault('session', null))
-                console.log(getSessionStorageOrDefault('user', null))
+                // console.log(getSessionStorageOrDefault('session', null))
+                // console.log(getSessionStorageOrDefault('user', null))
                 navigate("/main/home")
             } else {
                 setMsgError(mountMessage(r))

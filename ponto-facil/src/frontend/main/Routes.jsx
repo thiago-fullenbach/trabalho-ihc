@@ -8,10 +8,10 @@ import EmployeeCrud from "../components/view/Pages/Employees/EmployeeCrud";
 export default props => {
     return (
         <Routes>
-            <Route exact path ="/home" element={<Home />}></Route>
-            <Route path="/employees" element={<EmployeeCrud />}></Route>
+            <Route exact path ="/home" element={<Home carregando={props.carregando} setCarregando={props.setCarregando} />}></Route>
+            <Route path="/employees" element={<EmployeeCrud carregando={props.carregando} setCarregando={props.setCarregando} />}></Route>
             {/* <Route path="/config" element={<Config />}></Route> */}
-            <Route exact path ="/*" element={<Home />}></Route>
+            <Route exact path ="/*" element={<Home carregando={props.carregando} setCarregando={props.setCarregando} />}></Route>
         </Routes>
     )
 }

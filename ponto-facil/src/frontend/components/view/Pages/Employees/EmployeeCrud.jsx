@@ -113,12 +113,13 @@ export default class EmployeeCrud extends React.Component {
     setLoggedUser = (loggedUserValue) => setSessionStorage('user', loggedUserValue)
     loggedUserHasEnabledResource = (resourceCode) => this.getLoggedUser().Acessos.find(x => x.Recurso_cod_en === resourceCode).Eh_habilitado
     loggedUserHasEnabledResourceByDescription = (resourceDesc) => this.loggedUserHasEnabledResource(resourceDescription.find(x => x.recurso_desc.toLowerCase() === resourceDesc.toLowerCase()).recurso_cod_en)
+    
 
     componentDidMount() {
         (async () => {
-            this.setState({ carregando: true} )
+            this.props.setCarregando(true)
             let r = await ApiUtil.RespostaDoServidor_getAsync(this.getSession(), this.setSession, this.setLoggedUser, `${ApiUtil.string_urlApiV1}/Usuario/listarTodos`)
-            this.setState({ carregando: false} )
+            this.props.setCarregando(false)
             if (r.status === 200) {
                 this.setState({ erro: false, list: r.corpo.devolvido })
             } else {
@@ -234,9 +235,9 @@ export default class EmployeeCrud extends React.Component {
 
     publicSaveNew = () => {
         (async () => {
-            this.setState({ carregando: true} )
+            this.props.setCarregando(true)
             let r = await ApiUtil.RespostaDoServidor_postAsync(this.getSession(), this.setSession, this.setLoggedUser, `${ApiUtil.string_urlApiV1}/Usuario/insere`, this.state.user)
-            this.setState({ carregando: false} )
+            this.props.setCarregando(false)
             if (r.status === 200) {
                 this.setState({ erro: false, msg : msgSucessoNovoUsuario, employeeCrudState: "hidden" })
                 this.setState({ carregando: true })
@@ -257,9 +258,9 @@ export default class EmployeeCrud extends React.Component {
 
     publicSaveEdit = () => {
         (async () => {
-            this.setState({ carregando: true} )
+            this.props.setCarregando(true)
             let r = await ApiUtil.RespostaDoServidor_postAsync(this.getSession(), this.setSession, this.setLoggedUser, `${ApiUtil.string_urlApiV1}/Usuario/atualiza`, this.state.user)
-            this.setState({ carregando: false} )
+            this.props.setCarregando(false)
             if (r.status === 200) {
                 this.setState({ erro: false, msg : msgSucessoAtualizarUsuario, employeeCrudState: "hidden" })
                 this.setState({ carregando: true })
@@ -344,9 +345,9 @@ export default class EmployeeCrud extends React.Component {
 
     remove(idUser) {
         (async () => {
-            this.setState({ carregando: true} )
+            this.props.setCarregando(true)
             let r = await ApiUtil.RespostaDoServidor_postAsync(this.getSession(), this.setSession, this.setLoggedUser, `${ApiUtil.string_urlApiV1}/Usuario/excluiPeloId?id=${idUser}`, {})
-            this.setState({ carregando: false} )
+            this.props.setCarregando(false)
             if (r.status === 200) {
                 this.setState({ erro: false, msg : msgSucessoExcluirUsuario, employeeCrudState: "hidden" })
                 this.setState({ carregando: true })
@@ -366,7 +367,6 @@ export default class EmployeeCrud extends React.Component {
     }
 
     openConfirmRemoveUserModal(idUser) {
-        console.log({ ...this.state.confirmModalProps })
         let modalProps = { ...this.state.confirmModalProps }
         modalProps.confirmTitle = tituloConfirmaExclusao
         modalProps.confirmQuestion = msgConfirmaExclusao
@@ -468,7 +468,6 @@ export default class EmployeeCrud extends React.Component {
                         handleConfirm={this.confirmConfirmModal}
                         confirmTitle={this.state.confirmModalProps.confirmTitle}
                         confirmQuestion={this.state.confirmModalProps.confirmQuestion} />}
-                {this.state.carregando && <LoadingModal/>}
             </Main>
         )
     }

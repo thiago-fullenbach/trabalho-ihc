@@ -24,7 +24,7 @@ export default props => {
 
     useEffect(() => {
         axios(baseUrl).then(resp => {
-            console.log(resp.data)
+            // console.log(resp.data)
             setPresencaList(resp.data)
         })
     }, [])
@@ -39,7 +39,7 @@ export default props => {
         navigator.geolocation.getCurrentPosition(location => {
             axios.get(`http://nominatim.openstreetmap.org/reverse?format=json&lat=${location.coords.latitude}&lon=${location.coords.longitude}&zoom=18&addressdetails=1`)
                 .then(response => {
-                    console.log(response.data)
+                    // console.log(response.data)
                 })
         })
     }
