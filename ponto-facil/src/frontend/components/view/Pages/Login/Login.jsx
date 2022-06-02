@@ -10,9 +10,11 @@ import { faClock } from '@fortawesome/free-solid-svg-icons';
 import ApiUtil from '../../../../../chamada-api/ApiUtil';
 
 import { useNavigate } from 'react-router-dom';
-import { useSessionStorage } from '../../../../../utils/useSessionStorage';
+import { getSessionStorageOrDefault, useSessionStorage } from '../../../../../utils/useSessionStorage';
 import { useEffect } from 'react';
 import { isNullOrEmpty } from '../../../../../utils/valid';
+import LoadingModal from '../../../templates/LoadingModal/LoadingModal';
+import { mountMessage } from '../../../../../utils/formatting';
 
 export default props => {
     const navigate = useNavigate()
@@ -20,6 +22,7 @@ export default props => {
     const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')
     const [msgError, setMsgError] = useState('')
+    const [carregando, setCarregando] = useState(false)
 
     const [sessao, setSessao] = useSessionStorage('session', null);
     const [usuarioLogado, setUsuarioLogado] = useSessionStorage('user', null);
@@ -33,14 +36,15 @@ export default props => {
     const handleSubmit = e => {
         e.preventDefault();
         (async () => {
-            try {
-                let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, setUsuarioLogado, userName, password)
-                if(r.int_status !== 404) {
-                    setSessao(r.SessaoDTO_sessao)
-                    navigate("/main/home")
-                }
-            } catch(e) {
-                setMsgError("Login ou Senha inválidos")
+            setCarregando(true)
+            let r = await ApiUtil.RespostaDoServidor_submitEntrarAsync(setSessao, setUsuarioLogado, userName, password)
+            setCarregando(false)
+            if (r.status === 200) {
+                console.log(getSessionStorageOrDefault('session', null))
+                console.log(getSessionStorageOrDefault('user', null))
+                navigate("/main/home")
+            } else {
+                setMsgError(mountMessage(r))
             }
         })()
     }
@@ -61,6 +65,7 @@ export default props => {
             { msgError && 
                 <MsgDialog typeAlert="danger" msgType="Erro no Login" msg={msgError}/>
             }
+            { carregando && <LoadingModal/> }
             
         </div>
     )

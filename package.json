@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "ponto-facil": "file:ponto-facil"
+  }
+}

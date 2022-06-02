@@ -8,6 +8,10 @@ export function getSessionStorageOrDefault(key, defaultValue) {
   return JSON.parse(stored);
 }
 
+export function setSessionStorage(key, value) {
+  sessionStorage.setItem(key, JSON.stringify(value));
+}
+
 export function useSessionStorage(key, defaultValue) {
   const [value, setValue] = useState(
     getSessionStorageOrDefault(key, defaultValue)

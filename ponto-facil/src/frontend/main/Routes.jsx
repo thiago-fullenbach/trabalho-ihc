@@ -10,7 +10,7 @@ export default props => {
         <Routes>
             <Route exact path ="/home" element={<Home />}></Route>
             <Route path="/employees" element={<EmployeeCrud />}></Route>
-            <Route path="/config" element={<Config />}></Route>
+            {/* <Route path="/config" element={<Config />}></Route> */}
             <Route exact path ="/*" element={<Home />}></Route>
         </Routes>
     )

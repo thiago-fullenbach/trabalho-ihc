@@ -2,7 +2,7 @@ import AplicacaoStateAmbienteDesenvolvimento from "./AplicacaoStateAmbienteDesen
 import AplicacaoStateAmbienteProducao from "./AplicacaoStateAmbienteProducao";
 
 export default class AplicacaoStateful {
-    static get estado() {
+    static criaEstado() {
         if (window.location.hostname === 'ihc-n-ponto-facil.herokuapp.com') {
             return new AplicacaoStateAmbienteProducao();
         } else { return new AplicacaoStateAmbienteDesenvolvimento(); }

@@ -165,7 +165,9 @@ public class UsuarioController : ControllerBase
         NegocioException.ThrowErroSeHouver(mensagens, (int)HttpStatusCode.NotFound);
 
         var usuarioLogado = _usuarioConvertUnique.ExtrairUsuarioLogado(HttpContext.Request.Headers);
-        _usuarioRepositorio.AutorizaUsuario(usuarioLogado, (int)EnRecurso.CadastrarDemaisUsuarios);
+        if (editarUsuario.Id == usuarioLogado.Id)
+            { _usuarioRepositorio.AutorizaUsuario(usuarioLogado, (int)EnRecurso.CadastrarUsuario); }
+        else { _usuarioRepositorio.AutorizaUsuario(usuarioLogado, (int)EnRecurso.CadastrarDemaisUsuarios); }
 
         _usuarioRepositorio.ValidaEditarUsuario(editarUsuario);
         if (!(_acessoConvert.UsuarioTemRecursoHabilitado(usuarioLogado, EnRecurso.CadastrarAcessoTodosUsuarios)) || editarUsuario.Id == usuarioLogado.Id)

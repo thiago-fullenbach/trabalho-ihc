@@ -1,5 +1,5 @@
 function isFieldValid(input) {
-    return input.trim() !== "";
+    return (input + '').trim() !== "";
 }
 
 function isNullOrEmpty(value) {

@@ -33,10 +33,12 @@ export default class RespostaDoServidor {
     static parse(AxiosResponse_resposta) {
       let RespostaDoServidor_retorno = new RespostaDoServidor();
       RespostaDoServidor_retorno.int_status = AxiosResponse_resposta.status;
-      let any_sessao = JSON.parse(AxiosResponse_resposta.headers["sessao"]);
-      RespostaDoServidor_retorno.SessaoDTO_sessao = any_sessao;
-      let any_usuario = JSON.parse(AxiosResponse_resposta.headers["usuario"]);
-      RespostaDoServidor_retorno.UsuarioLogadoDTO_usuario = any_usuario;
+      if (RespostaDoServidor_retorno.int_status >= 200 && RespostaDoServidor_retorno.int_status <= 299) {
+        let any_sessao = JSON.parse(AxiosResponse_resposta.headers["sessao"]);
+        RespostaDoServidor_retorno.SessaoDTO_sessao = any_sessao;
+        let any_usuario = JSON.parse(AxiosResponse_resposta.headers["usuario"]);
+        RespostaDoServidor_retorno.UsuarioLogadoDTO_usuario = any_usuario;
+      }
       RespostaDoServidor_retorno.DevolvidoMensagensDTO_corpo = AxiosResponse_resposta.data;
       return RespostaDoServidor_retorno;
     }
