@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "ponto-facil": "file:ponto-facil"
+    "ponto-facil": "file:ponto-facil",
+    "tsx-ponto-facil": "file:tsx-ponto-facil"
   }
 }

@@ -1,5 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# PONTO FACIL - WEB - OLD JAVASCRIPT
 # dependencies
 /ponto-facil/node_modules
 /ponto-facil/.pnp
@@ -26,11 +27,36 @@
 /ponto-facil/yarn-debug.log*
 /ponto-facil/yarn-error.log*
 
+# PONTO FACIL - WEB - NEW TYPESCRIPT
+# dependencies
+/tsx-ponto-facil/node_modules
+/tsx-ponto-facil/.pnp
+/tsx-ponto-facil/.pnp.js
+
+# testing
+/tsx-ponto-facil/coverage
+
+# production
+/tsx-ponto-facil/build
+
+# misc
+/tsx-ponto-facil/.DS_Store
+/tsx-ponto-facil/.env.local
+/tsx-ponto-facil/.env.development.local
+/tsx-ponto-facil/.env.test.local
+/tsx-ponto-facil/.env.production.local
+
+/tsx-ponto-facil/npm-debug.log*
+/tsx-ponto-facil/yarn-debug.log*
+/tsx-ponto-facil/yarn-error.log*
+
 /node_modules
 
+# PONTO FACIL - API
 /PontoFacil.Api/bin
 /PontoFacil.Api/obj
 /PontoFacil.Api/secret.txt
+
 /MariaDB
 
 /.vscode
