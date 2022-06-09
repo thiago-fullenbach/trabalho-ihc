@@ -1,8 +1,16 @@
 import './Main.css'
 import React from 'react'
 import Header from '../Header/Header'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
-export default props => {
+type MainProps = {
+    icon: IconDefinition
+    title: string
+    subtitle: string
+    children: React.ReactNode
+}
+
+export default (props: MainProps): JSX.Element => {
     return (
         <React.Fragment>
             <Header icon={props.icon} title={props.title} subtitle={props.subtitle} />

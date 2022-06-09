@@ -11,8 +11,10 @@ import LoggedUserDTO from '../../chamada-api/DTO/DoServidorParaCliente/LoggedUse
 import SessionState from './SessionState';
 
 export default (_: {}): JSX.Element => {
+
     const [sessao, setSessao] = useSessionStorage<string | null>('session', null);
     const [usuarioLogado, setUsuarioLogado] = useSessionStorage<LoggedUserDTO | null>('user', null);
+
     const updateSessao = (sessao: string | null): void => {
         setSessao(sessao);
     }
@@ -20,7 +22,6 @@ export default (_: {}): JSX.Element => {
         setUsuarioLogado(usuarioLogado);
     }
     const sessionState = new SessionState(sessao, updateSessao, usuarioLogado, updateUsuarioLogado)
-
     const userIsLogged = (): boolean => {
         return (usuarioLogado !== null && usuarioLogado.Id !== 0)
     }

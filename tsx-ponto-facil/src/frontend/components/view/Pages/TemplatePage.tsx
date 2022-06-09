@@ -19,25 +19,23 @@ type TemplatePageProps = {
 }
 
 export default (props: TemplatePageProps): JSX.Element => {
+    
     const navigate = useNavigate()
-    const signedInUser = props.sessionState.loggedUser
-
     const [carregando, setCarregando] = React.useState(false)
     const updateCarregando = (carregando: boolean): void => {
         setCarregando(carregando);
     }
     const loadingState = new LoadingState(carregando, updateCarregando)
 
-    useEffect(() => {
-        if(isNullOrEmpty(signedInUser)) {
+    useEffect((): void => {
+        if(isNullOrEmpty(props.sessionState.loggedUser)) {
             navigate("/")
         }
-    }, [signedInUser])
-
+    }, [props.sessionState.loggedUser])
     return (
         <div className="tp-page">
             <Logo></Logo>
-            <Nav></Nav>
+            <Nav sessionState={props.sessionState}></Nav>
             <Routes loadingState={loadingState} sessionState={props.sessionState} />
             <Footer></Footer>
             {carregando && <LoadingModal/> }

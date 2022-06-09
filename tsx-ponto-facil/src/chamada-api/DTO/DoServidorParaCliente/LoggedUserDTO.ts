@@ -7,5 +7,5 @@ export default class LoggedUserDTO {
     Data_nascimento: Date = new Date()
     Horas_diarias: number = 0
     Login: string = ``
-    AccessList: LoggedUserAccessDTO[] = []
+    Acessos: LoggedUserAccessDTO[] = []
 }

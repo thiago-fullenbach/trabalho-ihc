@@ -1,6 +1,6 @@
 import { faTrash, faPencil, faUsers, faClipboard } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Main from "../../../templates/Main/Main";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -28,6 +28,8 @@ import DetailedUserDTO from "../../../../modelo/employee/DTO/detailedUserDTO";
 import NewUserDTOAdapter from "../../../../modelo/employee/DTO/Adapter/newUserDTOAdapter";
 import EditUserDTOAdapter from "../../../../modelo/employee/DTO/Adapter/editUserDTOAdapter";
 import UserAdapter from "../../../../modelo/employee/Adapter/userAdapter";
+import UserAccess from "../../../../modelo/employee/userAccess";
+import EnResource from "../../../../modelo/enum/enResource";
 
 type EmployeeCrudProps = {
     sessionState: SessionState
@@ -124,31 +126,56 @@ const initialState: EmployeeCrudState = {
 
 const tituloConfirmaExclusao = `Atenção!`
 
-export default class EmployeeCrud extends React.Component<EmployeeCrudProps, EmployeeCrudState> {
+export default (props: EmployeeCrudProps): JSX.Element => {
 
-    state = { ...initialState }
+    const [user, setUser] = useState(initialState.user)
+    const [list, setList] = useState(initialState.list)
+    const [msg, setMsg] = useState(initialState.msg)
+    const [erro, setErro] = useState(initialState.erro)
+    const [newUser, setNewUser] = useState(initialState.newUser)
+    const [tempAccess, setTempAccess] = useState(initialState.tempAccess)
+    const [employeeCrudState, setEmployeeCrudState] = useState(initialState.employeeCrudState)
+    const [confirmModalProps, setConfirmModalProps] = useState(initialState.confirmModalProps)
 
-    componentDidMount(): void {
-        this.refreshSearchedUsers()
-    }
-
-    refreshSearchedUsers = (): void => {
-        this.props.loadingState.updateLoading(true);
-        (async () => {
-            let r = await ApiUtil.getAsync<SearchedUser[]>(this.props.sessionState.stringifiedSession, this.props.sessionState.updateStringifiedSession, this.props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/listarTodos`)
-            this.props.loadingState.updateLoading(false)
+    const refreshSearchedUsers = (): void => {
+        props.loadingState.updateLoading(true);
+        (async (): Promise<void> => {
+            console.log(props.sessionState.stringifiedSession)
+            let r = await ApiUtil.getAsync<SearchedUser[]>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/listarTodos`)
+            props.loadingState.updateLoading(false)
             let retrievedUsers = r.body !== undefined ? (r.body.getReturned() || []) : []
             if (r.status === 200) {
-                this.setState({ erro: false, list: retrievedUsers })
+                setErro(false)
+                setList(retrievedUsers)
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body);
-                this.setState({ erro : true, msg : mensagemCompleta })
+                setErro(true)
+                setMsg(mensagemCompleta)
             }
         })()
     }
-
-    publicValidateNewUser = (): void => {
-        const user = this.state.user
+    useEffect((): void => {
+        refreshSearchedUsers()
+    }, [])
+    const publicSaveNew = (): void => {
+        props.loadingState.updateLoading(true);
+        (async (): Promise<void> => {
+            const postNewUser = new NewUserDTOAdapter(user).getRawNewUserDTO()
+            let r = await ApiUtil.postAsync<DetailedUserDTO>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/insere`, postNewUser)
+            props.loadingState.updateLoading(false)
+            if (r.status === 200) {
+                setErro(false)
+                setMsg(message.employee.successCreated)
+                setEmployeeCrudState(EnEmployeeCrudState.Hidden)
+                refreshSearchedUsers()
+            } else {
+                let mensagemCompleta = mountMessageServerErrorIfDefault(r.body)
+                setErro(true)
+                setMsg(mensagemCompleta)
+            }
+        })()
+    }
+    const publicValidateNewUser = (): void => {
         let invalidFields = []
         if (!isFieldValid(user.nome)) {
             invalidFields.push(`Nome`)
@@ -173,14 +200,31 @@ export default class EmployeeCrud extends React.Component<EmployeeCrudProps, Emp
         }
         if (invalidFields.length > 0) {
             let camposInvalidos = listItemsInPortuguese(invalidFields)
-            this.setState({ erro : true, msg : `É necessário preencher ${camposInvalidos}.` })
+            setErro(true)
+            setMsg(`É necessário preencher ${camposInvalidos}.`)
         } else {
-            this.publicSaveNew()
+            publicSaveNew()
         }
     }
-
-    publicValidateEditUser = (): void => {
-        const user = this.state.user
+    const publicSaveEdit = (): void => {
+        props.loadingState.updateLoading(true);
+        (async (): Promise<void> => {
+            const postEditUser = new EditUserDTOAdapter(user).getRawEditUserDTO()
+            let r = await ApiUtil.postAsync<DetailedUserDTO>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/atualiza`, postEditUser)
+            props.loadingState.updateLoading(false)
+            if (r.status === 200) {
+                setErro(false)
+                setMsg(message.employee.successUpdated)
+                setEmployeeCrudState(EnEmployeeCrudState.Hidden)
+                refreshSearchedUsers()
+            } else {
+                let mensagemCompleta = mountMessageServerErrorIfDefault(r.body);
+                setErro(true)
+                setMsg(mensagemCompleta)
+            }
+        })()
+    }
+    const publicValidateEditUser = (): void => {
         let invalidFields = []
         if (!isFieldValid(user.nome)) {
             invalidFields.push(`Nome`)
@@ -199,166 +243,155 @@ export default class EmployeeCrud extends React.Component<EmployeeCrudProps, Emp
         }
         if (invalidFields.length > 0) {
             let camposInvalidos = listItemsInPortuguese(invalidFields)
-            this.setState({ erro : true, msg : `É necessário preencher ${camposInvalidos}.` })
+            setErro(true)
+            setMsg(`É necessário preencher ${camposInvalidos}.`)
         } else {
-            this.publicSaveEdit()
+            publicSaveEdit()
         }
     }
-
-    clear(): void {
-        this.setState({ 
-            user: initialState.user, 
-            erro: initialState.erro, 
-            msg: initialState.msg, 
-            newUser: initialState.newUser, 
-            tempAccess: initialState.tempAccess 
-        })
+    const clear = (): void => {
+        setUser(initialState.user)
+        setErro(initialState.erro)
+        setMsg(initialState.msg)
+        setNewUser(initialState.newUser)
+        setTempAccess(initialState.tempAccess)
     }
-
-    publicSaveNew = (): void => {
-        this.props.loadingState.updateLoading(true);
-        (async () => {
-            const postNewUser = new NewUserDTOAdapter(this.state.user).getRawNewUserDTO()
-            let r = await ApiUtil.postAsync<DetailedUserDTO>(this.props.sessionState.stringifiedSession, this.props.sessionState.updateStringifiedSession, this.props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/insere`, postNewUser)
-            this.props.loadingState.updateLoading(false)
-            if (r.status === 200) {
-                this.setState({ erro: false, msg : message.employee.successCreated, employeeCrudState: EnEmployeeCrudState.Hidden })
-                this.refreshSearchedUsers()
-            } else {
-                let mensagemCompleta = mountMessageServerErrorIfDefault(r.body);
-                this.setState({ erro : true, msg : mensagemCompleta })
-            }
-        })()
-    }
-
-    publicSaveEdit = (): void => {
-        this.props.loadingState.updateLoading(true);
-        (async () => {
-            const postEditUser = new EditUserDTOAdapter(this.state.user).getRawEditUserDTO()
-            let r = await ApiUtil.postAsync<DetailedUserDTO>(this.props.sessionState.stringifiedSession, this.props.sessionState.updateStringifiedSession, this.props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/atualiza`, postEditUser)
-            this.props.loadingState.updateLoading(false)
-            if (r.status === 200) {
-                this.setState({ erro: false, msg : message.employee.successUpdated, employeeCrudState: EnEmployeeCrudState.Hidden })
-                this.refreshSearchedUsers()
-            } else {
-                let mensagemCompleta = mountMessageServerErrorIfDefault(r.body);
-                this.setState({ erro : true, msg : mensagemCompleta })
-            }
-        })()
-    }
-
-    publicUpdateField = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const user = { ...this.state.user }
+    const publicUpdateField = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const changedUser = { ...user }
         switch (event.target.name) {
             case `nome`:
-                user.nome = event.target.value
+                changedUser.nome = event.target.value
                 break
             case `cpf`:
-                user.cpf = event.target.value
+                changedUser.cpf = event.target.value
                 break
             case `data_nascimento`:
-                user.data_nascimento = event.target.valueAsDate
+                changedUser.data_nascimento = event.target.valueAsDate
                 break
             case `horas_diarias`:
-                user.horas_diarias = event.target.valueAsNumber
+                changedUser.horas_diarias = event.target.valueAsNumber
                 break
             case `login`:
-                user.login = event.target.value
+                changedUser.login = event.target.value
                 break
             case `nova_senha`:
-                user.nova_senha = event.target.value
+                changedUser.nova_senha = event.target.value
                 break
             case `confirmar_senha`:
-                user.confirmar_senha = event.target.value
+                changedUser.confirmar_senha = event.target.value
                 break
             default:
                 break
         }
-        this.setState({ user })
+        setUser(changedUser)
     }
-
-    publicUpdateAccess = (event: React.ChangeEvent<HTMLInputElement>, recurso_cod_en: number): void => {
-        const aUser = { ...this.state.user }
-        aUser.acessos[aUser.acessos.findIndex(x => x.recurso_cod_en === recurso_cod_en)].eh_habilitado = !!event.target.checked
-        this.setState({ user: aUser })
+    const publicUpdateAccess = (event: React.ChangeEvent<HTMLInputElement>, recurso_cod_en: number): void => {
+        const aUser = { ...user }
+        aUser.acessos[aUser.acessos.findIndex((x: UserAccess): boolean => x.recurso_cod_en === recurso_cod_en)].eh_habilitado = !!event.target.checked
+        setUser(aUser)
     }
-
-    publicShowNewUserForm = (): void => {
-        this.clear()
-        this.setState({ employeeCrudState: EnEmployeeCrudState.New })
+    const publicShowNewUserForm = (): void => {
+        clear()
+        setEmployeeCrudState(EnEmployeeCrudState.New)
     }
-
-    publicCancelForm = (): void => {
-        this.setState({ employeeCrudState: EnEmployeeCrudState.Hidden })
+    const publicCancelForm = (): void => {
+        setEmployeeCrudState(EnEmployeeCrudState.Hidden)
     }
-
-    renderForm(): JSX.Element {
-        if (this.state.employeeCrudState.equals(EnEmployeeCrudState.Hidden)) {
-            return (this.props.sessionState.loggedUserHasEnabledResourceByDescription("CadastrarDemaisUsuarios") ? <HiddenEmployeeCrud publicShowNewUserForm={this.publicShowNewUserForm} sessionState={this.props.sessionState} /> : <div></div>)
-        } else if (this.state.employeeCrudState.equals(EnEmployeeCrudState.New)) {
-            return (<NewEmployeeCrud newUser={this.state.user} publicCancelForm={this.publicCancelForm} publicUpdateAccess={this.publicUpdateAccess} publicUpdateField={this.publicUpdateField} publicValidateNewUser={this.publicValidateNewUser} sessionState={this.props.sessionState} />)
+    const renderForm = (): JSX.Element => {
+        if (employeeCrudState.equals(EnEmployeeCrudState.Hidden)) {
+            return (props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarDemaisUsuarios) ? <HiddenEmployeeCrud publicShowNewUserForm={publicShowNewUserForm} sessionState={props.sessionState} /> : <div></div>)
+        } else if (employeeCrudState.equals(EnEmployeeCrudState.New)) {
+            return (<NewEmployeeCrud newUser={user} publicCancelForm={publicCancelForm} publicUpdateAccess={publicUpdateAccess} publicUpdateField={publicUpdateField} publicValidateNewUser={publicValidateNewUser} sessionState={props.sessionState} />)
         } else {
-            return (<EditEmployeeCrud editUser={this.state.user} publicCancelForm={this.publicCancelForm} publicUpdateAccess={this.publicUpdateAccess} publicUpdateField={this.publicUpdateField} publicValidateEditUser={this.publicValidateEditUser} sessionState={this.props.sessionState} />)
+            return (<EditEmployeeCrud editUser={user} publicCancelForm={publicCancelForm} publicUpdateAccess={publicUpdateAccess} publicUpdateField={publicUpdateField} publicValidateEditUser={publicValidateEditUser} sessionState={props.sessionState} />)
         }
     }
-
-    load(idUser: number): void {
-        this.props.loadingState.updateLoading(true);
-        (async () => {
-            let r = await ApiUtil.getAsync<DetailedUserDTO>(this.props.sessionState.stringifiedSession, this.props.sessionState.updateStringifiedSession, this.props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/pegaPeloId?id=${idUser}`)
-            this.props.loadingState.updateLoading(false)
+    const load = (idUser: number): void => {
+        props.loadingState.updateLoading(true);
+        (async (): Promise<void> => {
+            let r = await ApiUtil.getAsync<DetailedUserDTO>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/pegaPeloId?id=${idUser}`)
+            props.loadingState.updateLoading(false)
             if (r.status === 200) {
                 const loadedUser = new UserAdapter(r.body?.getReturned() || new DetailedUserDTO()).getRawUser()
-                this.setState({ erro: false, msg : "", employeeCrudState: EnEmployeeCrudState.Edit, user: loadedUser })
+                setErro(false)
+                setMsg(``)
+                setEmployeeCrudState(EnEmployeeCrudState.Edit)
+                setUser(loadedUser)
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body)
-                this.setState({ erro : true, msg : mensagemCompleta })
+                setErro(true)
+                setMsg(mensagemCompleta)
             }
         })()
     }
-
-    remove(idUser: number): void {
-        this.props.loadingState.updateLoading(true);
-        (async () => {
-            let r = await ApiUtil.postAsync<null>(this.props.sessionState.stringifiedSession, this.props.sessionState.updateStringifiedSession, this.props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/excluiPeloId?id=${idUser}`, {})
-            this.props.loadingState.updateLoading(false)
+    const remove = (idUser: number): void => {
+        props.loadingState.updateLoading(true);
+        (async (): Promise<void> => {
+            let r = await ApiUtil.postAsync<null>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/excluiPeloId?id=${idUser}`, {})
+            props.loadingState.updateLoading(false)
             if (r.status === 200) {
-                this.setState({ erro: false, msg : message.employee.successRemoved, employeeCrudState: EnEmployeeCrudState.Hidden })
-                this.refreshSearchedUsers()
+                setErro(false)
+                setMsg(message.employee.successRemoved)
+                setEmployeeCrudState(EnEmployeeCrudState.Hidden)
+                refreshSearchedUsers()
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body)
-                this.setState({ erro : true, msg : mensagemCompleta })
+                setErro(true)
+                setMsg(mensagemCompleta)
             }
         })()
     }
-
-    openConfirmRemoveUserModal(idUser: number): void {
-        let modalProps = { ...this.state.confirmModalProps }
+    const openConfirmRemoveUserModal = (idUser: number): void => {
+        let modalProps = { ...confirmModalProps }
         modalProps.confirmTitle = tituloConfirmaExclusao
         modalProps.confirmQuestion = message.employee.ensureRemove
         modalProps.isRemove = true
         modalProps.idRemovedEntity = idUser
-        this.setState({ confirmModalProps: modalProps })
+        setConfirmModalProps(modalProps)
     }
-
-    closeConfirmModal = (): void => {
-        let modalProps = { ...this.state.confirmModalProps }
+    const closeConfirmModal = (): void => {
+        let modalProps = { ...confirmModalProps }
         modalProps.confirmQuestion = ""
-        this.setState({ confirmModalProps: modalProps })
+        setConfirmModalProps(modalProps)
     }
-
-    confirmConfirmModal = (): void => {
-        if (this.state.confirmModalProps.isRemove) {
-            this.remove(this.state.confirmModalProps.idRemovedEntity)
+    const confirmConfirmModal = (): void => {
+        if (confirmModalProps.isRemove) {
+            remove(confirmModalProps.idRemovedEntity)
         }
-        this.closeConfirmModal()
+        closeConfirmModal()
     }
-
-    copyToClipboard = (text: string): void => {
+    const copyToClipboard = (text: string): void => {
         navigator.clipboard.writeText(text);
     }
-
-    renderTable(): JSX.Element {
+    const renderRows = (): JSX.Element[] => {
+        return list.map((user: SearchedUser): JSX.Element => {
+            return (
+                <tr key={user.id}>
+                    <td>{user.nome.split(' ')[0]}</td>
+                    <td>{formatCpf(user.cpf)}</td>
+                    <td className="d-flex">
+                        <button className="btn btn-primary ms-2"
+                            onClick={() => copyToClipboard(formatCpf(user.cpf))}>
+                            <FontAwesomeIcon icon={faClipboard} />
+                        </button></td>
+                    <td>{formatDate_dd_mm_yyyy(new Date(user.data_nascimento))}</td>
+                    <td>{user.horas_diarias}</td>
+                    <td>{user.login}</td>
+                    <td className="d-flex">
+                        {(props.sessionState.loggedUser?.Id === user.id ? props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarUsuario) : props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarDemaisUsuarios)) && <button className="btn btn-warning"
+                            onClick={() => load(user.id)}>
+                            <FontAwesomeIcon icon={faPencil} />
+                        </button>}
+                        {(props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarDemaisUsuarios) && props.sessionState.loggedUser?.Id !== user.id) && <button className="btn btn-danger ms-2"
+                            onClick={() => openConfirmRemoveUserModal(user.id)}>
+                            <FontAwesomeIcon icon={faTrash} />
+                        </button>}
+                    </td>
+                </tr>
+            )
+        })
+    }
+    const renderTable = (): JSX.Element => {
         return (
             <Table headings={
                 [
@@ -370,66 +403,26 @@ export default class EmployeeCrud extends React.Component<EmployeeCrudProps, Emp
                     "Login"
                 ]
             }>
-                {this.renderRows()}
+                {renderRows()}
             </Table>
         )
     }
-
-    renderRows() {
-        return this.state.list.map(user => {
-            return (
-                <tr key={user.id}>
-                    <td>{user.nome.split(' ')[0]}</td>
-                    <td>{formatCpf(user.cpf)}</td>
-                    <td className="d-flex">
-                        <button className="btn btn-primary ms-2"
-                            onClick={() => this.copyToClipboard(formatCpf(user.cpf))}>
-                            <FontAwesomeIcon icon={faClipboard} />
-                        </button></td>
-                    <td>{formatDate_dd_mm_yyyy(new Date(user.data_nascimento))}</td>
-                    <td>{user.horas_diarias}</td>
-                    <td>{user.login}</td>
-                    <td className="d-flex">
-                        {(this.props.sessionState.loggedUser?.Id === user.id ? this.props.sessionState.loggedUserHasEnabledResourceByDescription("CadastrarUsuario") : this.props.sessionState.loggedUserHasEnabledResourceByDescription("CadastrarDemaisUsuarios")) && <button className="btn btn-warning"
-                            onClick={() => this.load(user.id)}>
-                            <FontAwesomeIcon icon={faPencil} />
-                        </button>}
-                        {(this.props.sessionState.loggedUserHasEnabledResourceByDescription("CadastrarDemaisUsuarios") && this.props.sessionState.loggedUser?.Id !== user.id) && <button className="btn btn-danger ms-2"
-                            onClick={() => this.openConfirmRemoveUserModal(user.id)}>
-                            <FontAwesomeIcon icon={faTrash} />
-                        </button>}
-                    </td>
-                </tr>
-            )
-        })
-    }
-
-    render() {
-        return (
-            <Main {...headerProps}>
-                {this.state.msg && (
-                    <div className={`alert alert-${this.state.erro ? 'danger' : 'success'}`} role="alert">
-                        {this.state.msg}
-                    </div>
-                )}
-                {/* {this.state.newUser && (
-                    <div className="alert alert-info">
-                        Dados de Acesso temporários
-                        <ul>
-                            <li>Login: {this.state.tempAccess}</li>
-                            <li>Senha: {this.state.tempAccess}</li>
-                        </ul>
-                    </div>
-                )} */}
-                {this.renderTable()}
-                {this.renderForm()}
-                {(this.state.confirmModalProps.confirmQuestion.length > 0)
-                    && <ConfirmModal
-                        handleClose={this.closeConfirmModal}
-                        handleConfirm={this.confirmConfirmModal}
-                        confirmTitle={this.state.confirmModalProps.confirmTitle}
-                        confirmQuestion={this.state.confirmModalProps.confirmQuestion} />}
-            </Main>
-        )
-    }
+    return (
+        <Main {...headerProps}>
+            {msg && (
+                <div className={`alert alert-${erro ? 'danger' : 'success'}`} role="alert">
+                    {msg}
+                </div>
+            )}
+            {renderTable()}
+            {renderForm()}
+            {(confirmModalProps.confirmQuestion.length > 0)
+                && <ConfirmModal
+                    handleClose={closeConfirmModal}
+                    handleConfirm={confirmConfirmModal}
+                    confirmTitle={confirmModalProps.confirmTitle}
+                    confirmQuestion={confirmModalProps.confirmQuestion} />}
+        </Main>
+    )
+    
 }

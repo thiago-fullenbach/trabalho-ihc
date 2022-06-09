@@ -4,7 +4,7 @@ import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 
-export default props => {
+export default (_: {}): JSX.Element => {
     return (
         <footer className="footer">
             <span>

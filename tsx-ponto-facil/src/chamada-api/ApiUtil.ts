@@ -2,7 +2,6 @@ import LoginXSenhaDTO from "./DTO/DoClienteParaServidor/LoginXSenhaDTO";
 import axios, { AxiosError } from 'axios';
 import AmbienteAplicacaoStateful from "./Aplicacao";
 import ReturnedXMessagesFailure from "./DTO/DoServidorParaCliente/ReturnedXMessagesImpl/ReturnedXMessagesFailure";
-import React from "react";
 import LoggedUserDTO from "./DTO/DoServidorParaCliente/LoggedUserDTO";
 import ServerResponse from "./DTO/DoServidorParaCliente/Extra/ServerResponse";
 import AuthenticatedHeader from "./DTO/DoClienteParaServidor/AuthenticatedHeader";
@@ -36,12 +35,10 @@ class ApiUtil {
             loginForm.login = login
             loginForm.senha = senha
             let response = await axios.post(`${ApiUtil.urlApiV1()}/Autorizacao/login`, loginForm)
-            console.log(response)
             let parsedResponse = new ServerResponse<null>().hasSuccess(response)
             this.refreshObtainedHeaders(updateSessao, updateUsuarioLogado, parsedResponse)
             return parsedResponse
         } catch (error: any) {
-            console.log(error)
             let parsedResponse = new ServerResponse<null>().hasFailure(error.response)
             return parsedResponse
         }
@@ -57,7 +54,7 @@ class ApiUtil {
             let headerComSessao = new AuthenticatedHeader()
             headerComSessao.sessao = sessao + ``
             let response = await axios.get(url, { headers: headerComSessao } )
-            let parsedResponse = new ServerResponse<RType>().hasFailure(response)
+            let parsedResponse = new ServerResponse<RType>().hasSuccess(response)
             this.refreshObtainedHeaders(updateSessao, updateUsuarioLogado, parsedResponse)
             return parsedResponse
         } catch (error: any) {
@@ -77,7 +74,7 @@ class ApiUtil {
             let headerComSessao = new AuthenticatedHeader()
             headerComSessao.sessao = sessao + ``
             let response = await axios.post(url, objeto, { headers: headerComSessao } )
-            let parsedResponse = new ServerResponse<RType>().hasFailure(response)
+            let parsedResponse = new ServerResponse<RType>().hasSuccess(response)
             this.refreshObtainedHeaders(updateSessao, updateUsuarioLogado, parsedResponse)
             return parsedResponse
         } catch (error: any) {

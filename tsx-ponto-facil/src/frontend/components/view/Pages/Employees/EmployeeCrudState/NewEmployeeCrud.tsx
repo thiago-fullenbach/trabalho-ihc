@@ -2,6 +2,7 @@ import React from "react";
 import { toInputValue } from "../../../../../../utils/formatting";
 import SessionState from "../../../../../main/SessionState";
 import User from "../../../../../modelo/employee/user";
+import EnResource from "../../../../../modelo/enum/enResource";
 import { resourceDescription } from "../../../../../modelo/resourceDescription";
 
 type NewEmployeeCrudProps = {
@@ -13,10 +14,10 @@ type NewEmployeeCrudProps = {
     sessionState: SessionState
 }
 
-export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProps, {}> {
+export default (props: NewEmployeeCrudProps): JSX.Element => {
 
-    render(): JSX.Element {
-        return (
+
+    return (
         <div className="form">
             <div className="row">
                 <div className="col-12">
@@ -33,8 +34,8 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
                                 <input type="text" 
                                     className="form-control" 
                                     name="nome"
-                                    value={this.props.newUser.nome}
-                                    onChange={e => this.props.publicUpdateField(e)}
+                                    value={props.newUser.nome}
+                                    onChange={e => props.publicUpdateField(e)}
                                     placeholder="Digite o nome..."/>
                             </div>
                             <div className="input col-md-6 col-12 mt-3">
@@ -42,8 +43,8 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
                                 <input type="text"
                                     className="form-control" 
                                     name="cpf"
-                                    value={this.props.newUser.cpf}
-                                    onChange={e => this.props.publicUpdateField(e)}
+                                    value={props.newUser.cpf}
+                                    onChange={e => props.publicUpdateField(e)}
                                     placeholder="Digite o CPF..." />
                             </div>
                         </div>
@@ -54,8 +55,8 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
                                     <input type="date"
                                         className="form-control" 
                                         name="data_nascimento"
-                                        value={toInputValue(this.props.newUser.data_nascimento)}
-                                        onChange={e => this.props.publicUpdateField(e)}
+                                        value={toInputValue(props.newUser.data_nascimento)}
+                                        onChange={e => props.publicUpdateField(e)}
                                         placeholder="Selecione a data de nascimento..." />
                             </div>
                             <div className="input col-md-6 col-12 mt-3">
@@ -63,8 +64,8 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
                                 <input type="number" min={2} max={12}
                                     className="form-control" 
                                     name="horas_diarias"
-                                    value={this.props.newUser.horas_diarias || ``}
-                                    onChange={e => this.props.publicUpdateField(e)}
+                                    value={props.newUser.horas_diarias || ``}
+                                    onChange={e => props.publicUpdateField(e)}
                                     placeholder="Digite as horas diárias..." />
                             </div>
                         </div>
@@ -75,8 +76,8 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
                                 <input type="text"
                                     className="form-control" 
                                     name="login"
-                                    value={this.props.newUser.login}
-                                    onChange={e => this.props.publicUpdateField(e)}
+                                    value={props.newUser.login}
+                                    onChange={e => props.publicUpdateField(e)}
                                     placeholder="Digite o login..." />
                             </div>
 
@@ -85,8 +86,8 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
                                     <input type="text"
                                         className="form-control" 
                                         name="nova_senha"
-                                        value={this.props.newUser.nova_senha}
-                                        onChange={e => this.props.publicUpdateField(e)}
+                                        value={props.newUser.nova_senha}
+                                        onChange={e => props.publicUpdateField(e)}
                                         placeholder="Digite a senha..." />
                             </div>
                         </div>
@@ -97,8 +98,8 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
                                     <input type="text"
                                         className="form-control" 
                                         name="confirmar_senha"
-                                        value={this.props.newUser.confirmar_senha}
-                                        onChange={e => this.props.publicUpdateField(e)}
+                                        value={props.newUser.confirmar_senha}
+                                        onChange={e => props.publicUpdateField(e)}
                                         placeholder="Digite a senha novamente..." />
                             </div>
                         </div>
@@ -117,12 +118,12 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
                         </div>
 
                         <div className="input-group row">
-                            {this.props.newUser.acessos.map((x, indx) => (
+                            {props.newUser.acessos.map((x, indx) => (
                                 <div key={indx} className="input col-md-6 col-12 mt-3 d-flex">
                                     <input type="checkbox"
                                         checked={x.eh_habilitado}
-                                        onChange={e => this.props.publicUpdateAccess(e, x.recurso_cod_en)}
-                                        disabled={!this.props.sessionState.loggedUserHasEnabledResourceByDescription("CadastrarAcessoTodosUsuarios")} />
+                                        onChange={e => props.publicUpdateAccess(e, x.recurso_cod_en)}
+                                        disabled={!props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarAcessoTodosUsuarios)} />
                                     <label className="ps-3">{resourceDescription.find(y => y.recurso_cod_en === x.recurso_cod_en)?.recurso_desc}</label>
                                 </div>
                             ))}
@@ -135,17 +136,16 @@ export default class NewEmployeeCrud extends React.Component<NewEmployeeCrudProp
             <div className="row">
                 <div className="col-12 d-flex justify-content-end">
                     <button className="btn btn-primary"
-                        onClick={_ => this.props.publicValidateNewUser()}>
+                        onClick={_ => props.publicValidateNewUser()}>
                         Salvar
                     </button>
 
                     <button className="btn btn-secondary ms-2"
-                        onClick={_ => this.props.publicCancelForm()}>
+                        onClick={_ => props.publicCancelForm()}>
                         Cancelar
                     </button>
                 </div>
             </div>
         </div>
-       )
-    }
+    )
 }

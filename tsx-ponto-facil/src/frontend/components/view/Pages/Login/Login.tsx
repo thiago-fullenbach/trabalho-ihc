@@ -14,7 +14,7 @@ import { getSessionStorageOrDefault, useSessionStorage } from '../../../../../ut
 import { useEffect } from 'react';
 import { isNullOrEmpty } from '../../../../../utils/valid';
 import LoadingModal from '../../../templates/LoadingModal/LoadingModal';
-import { mountMessage } from '../../../../../utils/formatting';
+import { mountMessage, mountMessageServerErrorIfDefault } from '../../../../../utils/formatting';
 import SessionState from '../../../../main/SessionState';
 import { setSimpleState } from '../../../../../utils/stateUtil';
 import { message } from '../../../../modelo/message';
@@ -36,23 +36,23 @@ export default (props: LoginProps): JSX.Element => {
             navigate("/main/home")
         }
     }, [props.sessionState.loggedUser])
-
-    const handleSubmit = (e: Event): void => {
+    const clearMsgError = (): void => {
+        setMsgError(``)
+    }
+    const handleSubmit = (e: SubmitEvent): void => {
         e.preventDefault();
         setCarregando(true); 
         (async (): Promise<void> => {
             let r = await ApiUtil.loginAsync(props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, userName, password)
             setCarregando(false)
             if (r.status === 200) {
-                // console.log(getSessionStorageOrDefault('session', null))
-                // console.log(getSessionStorageOrDefault('user', null))
                 navigate("/main/home")
             } else {
-                setMsgError(r.body !== undefined ? mountMessage(r.body) : message.serverError)
+                let mensagemCompleta = mountMessageServerErrorIfDefault(r.body)
+                setMsgError(mensagemCompleta)
             }
         })()
     }
-
     return (
         <div className="login">
             <Card title="Ponto Fácil" icon={faClock}>
@@ -62,12 +62,12 @@ export default (props: LoginProps): JSX.Element => {
                     <Input label="Senha" type="password" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSimpleState(setPassword, e.target.value) } 
                         placeholder="Senha"/>
                     <div className="button-group">
-                        <Button onClick={handleSubmit} type="submit">Acessar</Button>
+                        <Button onClick={(e: SubmitEvent): void => handleSubmit(e)} type="submit">Acessar</Button>
                     </div>
                 </form>
             </Card>
             { msgError && 
-                <MsgDialog typeAlert="danger" msgType="Erro no Login" msg={msgError}/>
+                <MsgDialog typeAlert="danger" msgType="Erro no Login" msg={msgError} onDismiss={clearMsgError} />
             }
             { carregando && <LoadingModal/> }
             

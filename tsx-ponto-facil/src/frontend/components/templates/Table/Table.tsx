@@ -1,7 +1,12 @@
 import './Table.css';
 import React from "react";
 
-export default props => {
+type TableProps = {
+    headings: string[]
+    children: React.ReactNode
+}
+
+export default (props: TableProps): JSX.Element => {
     return (
         <table className="table table-responsive mt4">
             <thead>

@@ -1,5 +1,6 @@
 import React from "react"
 import LoggedUserDTO from "../../chamada-api/DTO/DoServidorParaCliente/LoggedUserDTO"
+import EnResource from "../modelo/enum/enResource"
 import { resourceDescription } from "../modelo/resourceDescription"
 
 export default class SessionState {
@@ -20,6 +21,6 @@ export default class SessionState {
         this.loggedUser = loggedUser
         this.updateLoggedUser = updateLoggedUser
     }
-    loggedUserHasEnabledResource = (resourceCode: number): boolean => this.loggedUser?.AccessList?.find(x => x.Recurso_cod_en === resourceCode)?.Eh_habilitado || false
-    loggedUserHasEnabledResourceByDescription = (resourceDesc: string): boolean => this.loggedUserHasEnabledResource(resourceDescription.find(x => x.recurso_desc.toLowerCase() === resourceDesc.toLowerCase())?.recurso_cod_en || 0)
+    loggedUserHasEnabledResource = (resourceCode: number): boolean => this.loggedUser?.Acessos?.find(x => x.Recurso_cod_en === resourceCode)?.Eh_habilitado || false
+    loggedUserHasEnabledResourceByEnum = (resourceEnum: EnResource): boolean => this.loggedUserHasEnabledResource(resourceEnum.resourceCode)
 }

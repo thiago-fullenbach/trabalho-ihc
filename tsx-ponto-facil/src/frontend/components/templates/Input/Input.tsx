@@ -1,7 +1,7 @@
 import './Input.css';
 import React from "react";
 
-export default props => {
+export default (props: any): JSX.Element => {
     return (
         <div className="input-area">
             {props.label && (

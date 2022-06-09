@@ -4,7 +4,7 @@ import React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClock } from "@fortawesome/free-solid-svg-icons";
 
-export default props => {
+export default (_: {}): JSX.Element => {
     return (
         <aside className="logo">
             <FontAwesomeIcon icon={faClock} />

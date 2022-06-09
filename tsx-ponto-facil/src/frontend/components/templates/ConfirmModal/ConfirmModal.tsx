@@ -3,7 +3,14 @@ import './ConfirmModal.css';
 
 import { Modal, Button } from 'react-bootstrap';
 
-export default props => {
+type ConfirmModalProps = {
+  handleClose: () => void
+  handleConfirm: () => void
+  confirmTitle: string
+  confirmQuestion: string
+}
+
+export default (props: ConfirmModalProps): JSX.Element => {
     return (
         <Modal
         show={true}

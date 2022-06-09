@@ -3,6 +3,7 @@ import { toInputValue } from "../../../../../../utils/formatting";
 import { getSessionStorageOrDefault, setSessionStorage } from "../../../../../../utils/useSessionStorage";
 import SessionState from "../../../../../main/SessionState";
 import User from "../../../../../modelo/employee/user";
+import EnResource from "../../../../../modelo/enum/enResource";
 import { resourceDescription } from "../../../../../modelo/resourceDescription";
 
 type EditEmployeeCrudProps = {
@@ -14,10 +15,10 @@ type EditEmployeeCrudProps = {
     sessionState: SessionState
 }
 
-export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudProps, {}> {
+export default (props: EditEmployeeCrudProps): JSX.Element => {
 
-    render() {
-        return (
+    
+    return (
         <div className="form">
             <div className="row">
                 <div className="col-12">
@@ -34,8 +35,8 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
                                 <input type="text" 
                                     className="form-control" 
                                     name="nome"
-                                    value={this.props.editUser.nome}
-                                    onChange={e => this.props.publicUpdateField(e)}
+                                    value={props.editUser.nome}
+                                    onChange={e => props.publicUpdateField(e)}
                                     placeholder="Digite o nome..."/>
                             </div>
                             <div className="input col-md-6 col-12 mt-3">
@@ -43,8 +44,8 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
                                 <input type="text"
                                     className="form-control" 
                                     name="cpf"
-                                    value={this.props.editUser.cpf}
-                                    onChange={e => this.props.publicUpdateField(e)}
+                                    value={props.editUser.cpf}
+                                    onChange={e => props.publicUpdateField(e)}
                                     placeholder="Digite o CPF..." />
                             </div>
                         </div>
@@ -55,8 +56,8 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
                                     <input type="date"
                                         className="form-control" 
                                         name="data_nascimento"
-                                        value={toInputValue(this.props.editUser.data_nascimento)}
-                                        onChange={e => this.props.publicUpdateField(e)}
+                                        value={toInputValue(props.editUser.data_nascimento)}
+                                        onChange={e => props.publicUpdateField(e)}
                                         placeholder="Selecione a data de nascimento..." />
                             </div>
                             <div className="input col-md-6 col-12 mt-3">
@@ -64,8 +65,8 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
                                 <input type="number" min={2} max={12}
                                     className="form-control" 
                                     name="horas_diarias"
-                                    value={this.props.editUser.horas_diarias || ``}
-                                    onChange={e => this.props.publicUpdateField(e)}
+                                    value={props.editUser.horas_diarias || ``}
+                                    onChange={e => props.publicUpdateField(e)}
                                     placeholder="Digite as horas diárias..." />
                             </div>
                         </div>
@@ -76,8 +77,8 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
                                 <input type="text"
                                     className="form-control" 
                                     name="login"
-                                    value={this.props.editUser.login}
-                                    onChange={e => this.props.publicUpdateField(e)}
+                                    value={props.editUser.login}
+                                    onChange={e => props.publicUpdateField(e)}
                                     placeholder="Digite o login..." />
                             </div>
 
@@ -86,8 +87,8 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
                                     <input type="text"
                                         className="form-control" 
                                         name="nova_senha"
-                                        value={this.props.editUser.nova_senha}
-                                        onChange={e => this.props.publicUpdateField(e)}
+                                        value={props.editUser.nova_senha}
+                                        onChange={e => props.publicUpdateField(e)}
                                         placeholder="Digite a senha..." />
                             </div>
                         </div>
@@ -98,8 +99,8 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
                                     <input type="text"
                                         className="form-control" 
                                         name="confirmar_senha"
-                                        value={this.props.editUser.confirmar_senha}
-                                        onChange={e => this.props.publicUpdateField(e)}
+                                        value={props.editUser.confirmar_senha}
+                                        onChange={e => props.publicUpdateField(e)}
                                         placeholder="Digite a senha novamente..." />
                             </div>
                         </div>
@@ -118,12 +119,12 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
                         </div>
 
                         <div className="input-group row">
-                            {this.props.editUser.acessos.map((x, indx) => (
+                            {props.editUser.acessos.map((x, indx) => (
                                 <div key={indx} className="input col-md-6 col-12 mt-3 d-flex">
                                     <input type="checkbox"
                                         checked={x.eh_habilitado}
-                                        onChange={e => this.props.publicUpdateAccess(e, x.recurso_cod_en)}
-                                        disabled={!this.props.sessionState.loggedUserHasEnabledResourceByDescription("CadastrarAcessoTodosUsuarios") || this.props.sessionState.loggedUser?.Id === this.props.editUser.id} />
+                                        onChange={e => props.publicUpdateAccess(e, x.recurso_cod_en)}
+                                        disabled={!props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarAcessoTodosUsuarios) || props.sessionState.loggedUser?.Id === props.editUser.id} />
                                     <label className="ps-3">{resourceDescription.find(y => y.recurso_cod_en === x.recurso_cod_en)?.recurso_desc}</label>
                                 </div>
                             ))}
@@ -136,17 +137,16 @@ export default class EditEmployeeCrud extends React.Component<EditEmployeeCrudPr
             <div className="row">
                 <div className="col-12 d-flex justify-content-end">
                     <button className="btn btn-primary"
-                        onClick={e => this.props.publicValidateEditUser()}>
+                        onClick={e => props.publicValidateEditUser()}>
                         Salvar
                     </button>
 
                     <button className="btn btn-secondary ms-2"
-                        onClick={e => this.props.publicCancelForm()}>
+                        onClick={e => props.publicCancelForm()}>
                         Cancelar
                     </button>
                 </div>
             </div>
         </div>
-       )
-    }
+    )
 }

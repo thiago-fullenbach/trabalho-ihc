@@ -29,7 +29,7 @@ public static class InjecaoDependencia
     {
         services.AddDbContext<PontoFacilContexto>(options => {
             options.UseInMemoryDatabase("pontofacil_inmemorydb");
-        }, ServiceLifetime.Singleton);
+        });
         return services;
     }
     public static IServiceCollection AdicionarBibliotecaDeServicos(this IServiceCollection services)
