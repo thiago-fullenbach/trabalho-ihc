@@ -19,7 +19,10 @@ type TemplatePageProps = {
 }
 
 export default (props: TemplatePageProps): JSX.Element => {
-    
+    const [showMenu, setShowMenu] = React.useState(false)
+    const updateShowMenu = (showmenu: boolean): void => {
+        setShowMenu(showmenu);
+    }
     const navigate = useNavigate()
     const [carregando, setCarregando] = React.useState(false)
     const updateCarregando = (carregando: boolean): void => {
@@ -34,8 +37,8 @@ export default (props: TemplatePageProps): JSX.Element => {
     }, [props.sessionState.loggedUser])
     return (
         <div className="tp-page">
-            <Logo></Logo>
-            <Nav sessionState={props.sessionState}></Nav>
+            <Logo setShowMenu={updateShowMenu} showMenu={showMenu}></Logo>
+            <Nav sessionState={props.sessionState} setShowMenu={updateShowMenu} showMenu={showMenu}></Nav>
             <Routes loadingState={loadingState} sessionState={props.sessionState} />
             <Footer></Footer>
             {carregando && <LoadingModal/> }

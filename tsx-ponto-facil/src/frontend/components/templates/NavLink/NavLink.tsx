@@ -14,8 +14,8 @@ type NavLinkProps = {
 
 export default (props: NavLinkProps): JSX.Element => {
     return (
-        <Link to={props.path}>
-            <FontAwesomeIcon icon={props.icon} onClick={props.onClick} /> {props.label}
+        <Link to={props.path} className='d-inline-flex wrap align-items-center'>
+            <FontAwesomeIcon icon={props.icon} onClick={props.onClick} className='pe-1' /> {props.label}
         </Link>
     )
 }

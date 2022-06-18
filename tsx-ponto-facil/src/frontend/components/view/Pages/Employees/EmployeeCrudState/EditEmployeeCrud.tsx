@@ -79,29 +79,32 @@ export default (props: EditEmployeeCrudProps): JSX.Element => {
                                     name="login"
                                     value={props.editUser.login}
                                     onChange={e => props.publicUpdateField(e)}
-                                    placeholder="Digite o login..." />
+                                    placeholder="Digite o login..."
+                                    disabled={!props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarAcessoTodosUsuarios) && props.sessionState.loggedUser?.Id != props.editUser.id} />
                             </div>
 
                             <div className="input col-md-6 col-12 mt-3">
                                     <label>Nova Senha</label>
-                                    <input type="text"
+                                    <input type="password"
                                         className="form-control" 
                                         name="nova_senha"
                                         value={props.editUser.nova_senha}
                                         onChange={e => props.publicUpdateField(e)}
-                                        placeholder="Digite a senha..." />
+                                        placeholder="Digite a senha..."
+                                        disabled={!props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarAcessoTodosUsuarios) && props.sessionState.loggedUser?.Id != props.editUser.id} />
                             </div>
                         </div>
 
                         <div className="input-group row">
                             <div className="input col-md-6 col-12 mt-3">
                                     <label>Confirmar Senha</label>
-                                    <input type="text"
+                                    <input type="password"
                                         className="form-control" 
                                         name="confirmar_senha"
                                         value={props.editUser.confirmar_senha}
                                         onChange={e => props.publicUpdateField(e)}
-                                        placeholder="Digite a senha novamente..." />
+                                        placeholder="Digite a senha novamente..."
+                                        disabled={!props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarAcessoTodosUsuarios) && props.sessionState.loggedUser?.Id != props.editUser.id} />
                             </div>
                         </div>
                     </div>

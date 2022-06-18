@@ -52,10 +52,15 @@
 
 /node_modules
 
-# PONTO FACIL - API
+# PONTO FACIL - API - OLD MONOLITO
 /PontoFacil.Api/bin
 /PontoFacil.Api/obj
 /PontoFacil.Api/secret.txt
+
+# PONTO FACIL - API - NEW DDD
+/DDD.Api/bin
+/DDD.Api/obj
+/DDD.Api/secret.txt
 
 /MariaDB
 

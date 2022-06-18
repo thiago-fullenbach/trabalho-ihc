@@ -73,7 +73,12 @@ class ApiUtil {
         try {
             let headerComSessao = new AuthenticatedHeader()
             headerComSessao.sessao = sessao + ``
-            let response = await axios.post(url, objeto, { headers: headerComSessao } )
+            let response = await axios({
+                method: 'POST',
+                url,
+                data: objeto,
+                headers: headerComSessao
+            })
             let parsedResponse = new ServerResponse<RType>().hasSuccess(response)
             this.refreshObtainedHeaders(updateSessao, updateUsuarioLogado, parsedResponse)
             return parsedResponse

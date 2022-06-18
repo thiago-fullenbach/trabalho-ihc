@@ -11,7 +11,7 @@ import { getSessionStorageOrDefault, setSessionStorage } from "../../../../../ut
 
 import ApiUtil from '../../../../../chamada-api/ApiUtil';
 import LoadingModal from "../../../templates/LoadingModal/LoadingModal";
-import { formatCpf, formatDate_dd_mm_yyyy, listItemsInPortuguese, mountMessage, mountMessageServerErrorIfDefault } from "../../../../../utils/formatting";
+import { DateConstructor, formatCpf, formatDate_dd_mm_yyyy, listItemsInPortuguese, mountMessage, mountMessageServerErrorIfDefault } from "../../../../../utils/formatting";
 import HiddenEmployeeCrud from "./EmployeeCrudState/HiddenEmployeeCrud";
 import NewEmployeeCrud from "./EmployeeCrudState/NewEmployeeCrud";
 import EditEmployeeCrud from "./EmployeeCrudState/EditEmployeeCrud";
@@ -140,7 +140,6 @@ export default (props: EmployeeCrudProps): JSX.Element => {
     const refreshSearchedUsers = (): void => {
         props.loadingState.updateLoading(true);
         (async (): Promise<void> => {
-            console.log(props.sessionState.stringifiedSession)
             let r = await ApiUtil.getAsync<SearchedUser[]>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/listarTodos`)
             props.loadingState.updateLoading(false)
             let retrievedUsers = r.body !== undefined ? (r.body.getReturned() || []) : []
@@ -266,7 +265,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                 changedUser.cpf = event.target.value
                 break
             case `data_nascimento`:
-                changedUser.data_nascimento = event.target.valueAsDate
+                changedUser.data_nascimento = DateConstructor(event.target.valueAsDate)
                 break
             case `horas_diarias`:
                 changedUser.horas_diarias = event.target.valueAsNumber
@@ -313,6 +312,8 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             props.loadingState.updateLoading(false)
             if (r.status === 200) {
                 const loadedUser = new UserAdapter(r.body?.getReturned() || new DetailedUserDTO()).getRawUser()
+                loadedUser.data_nascimento = loadedUser.data_nascimento != null ? new Date(loadedUser.data_nascimento) : null
+                console.log(loadedUser);
                 setErro(false)
                 setMsg(``)
                 setEmployeeCrudState(EnEmployeeCrudState.Edit)
@@ -378,14 +379,24 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                     <td>{user.horas_diarias}</td>
                     <td>{user.login}</td>
                     <td className="d-flex">
-                        {(props.sessionState.loggedUser?.Id === user.id ? props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarUsuario) : props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarDemaisUsuarios)) && <button className="btn btn-warning"
+                        {(props.sessionState.loggedUser?.Id === user.id ? props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarUsuario) : (!user.eh_admin_root && props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarDemaisUsuarios)))
+                            ? <button className="btn btn-warning"
                             onClick={() => load(user.id)}>
-                            <FontAwesomeIcon icon={faPencil} />
-                        </button>}
-                        {(props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarDemaisUsuarios) && props.sessionState.loggedUser?.Id !== user.id) && <button className="btn btn-danger ms-2"
+                                <FontAwesomeIcon icon={faPencil} />
+                            </button>
+                            : <button className="btn btn-warning invisible">
+                                <FontAwesomeIcon icon={faPencil} />
+                            </button>
+                        }
+                        {(!user.eh_admin_root && (props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarDemaisUsuarios) && props.sessionState.loggedUser?.Id !== user.id))
+                            ? <button className="btn btn-danger ms-2"
                             onClick={() => openConfirmRemoveUserModal(user.id)}>
-                            <FontAwesomeIcon icon={faTrash} />
-                        </button>}
+                                <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                            : <button className="btn btn-danger ms-2 invisible">
+                                <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                        }
                     </td>
                 </tr>
             )

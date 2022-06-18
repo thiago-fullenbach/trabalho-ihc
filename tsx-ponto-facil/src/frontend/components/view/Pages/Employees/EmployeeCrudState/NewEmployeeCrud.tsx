@@ -82,8 +82,8 @@ export default (props: NewEmployeeCrudProps): JSX.Element => {
                             </div>
 
                             <div className="input col-md-6 col-12 mt-3">
-                                    <label>Nova Senha</label>
-                                    <input type="text"
+                                    <label>Senha</label>
+                                    <input type="password"
                                         className="form-control" 
                                         name="nova_senha"
                                         value={props.newUser.nova_senha}
@@ -95,7 +95,7 @@ export default (props: NewEmployeeCrudProps): JSX.Element => {
                         <div className="input-group row">
                             <div className="input col-md-6 col-12 mt-3">
                                     <label>Confirmar Senha</label>
-                                    <input type="text"
+                                    <input type="password"
                                         className="form-control" 
                                         name="confirmar_senha"
                                         value={props.newUser.confirmar_senha}

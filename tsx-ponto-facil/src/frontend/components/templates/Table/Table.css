@@ -1,0 +1,7 @@
+.container-tabela-responsiva {
+    overflow-x: scroll;
+}
+
+.tabela-responsiva {
+    overflow-x: hidden;
+}

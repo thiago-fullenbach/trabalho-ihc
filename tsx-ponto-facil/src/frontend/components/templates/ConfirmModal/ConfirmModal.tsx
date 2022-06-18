@@ -15,8 +15,6 @@ export default (props: ConfirmModalProps): JSX.Element => {
         <Modal
         show={true}
         onHide={props.handleClose}
-        keyboard={false}
-        backdrop="static"
         centered
       >
         <Modal.Header closeButton>

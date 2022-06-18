@@ -78,20 +78,7 @@ aside.menu-area {
 
     .menu-links {
         flex-direction: column;
-    }
-
-    .tp-page {
-        grid-template-rows: 
-            var(--logo-height)
-            auto
-            1fr
-            var(--footer-height);
-        grid-template-columns: 1fr;
-        grid-template-areas: 
-            "logo"
-            "menu"
-            "content"
-            "footer";
+        justify-content: center;
     }
 
     .menu-toggle {

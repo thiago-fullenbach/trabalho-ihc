@@ -12,3 +12,17 @@
     margin: 0 0 0 10px;
     font-size: 30px;
 }
+
+.menu-toggle {
+    display: none;
+}
+
+@media(max-width: 576px) {
+    .menu-toggle {
+        display: block;
+        background-color: transparent;
+        border: none;
+        color: var(--cor-secundaria);
+        font-size: 1.4em;
+    }
+}

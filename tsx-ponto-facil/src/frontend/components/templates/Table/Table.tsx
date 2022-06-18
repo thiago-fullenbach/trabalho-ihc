@@ -8,15 +8,18 @@ type TableProps = {
 
 export default (props: TableProps): JSX.Element => {
     return (
-        <table className="table table-responsive mt4">
-            <thead>
-                <tr>
-                    {props.headings.map((heading, index) => <th key={index}>{heading}</th>)}
-                </tr>
-            </thead>
-            <tbody>
-                {props.children}
-            </tbody>
-        </table>
+        <div className='container-tabela-responsiva'>
+            <table className="table tabela-responsiva">
+                <thead>
+                    <tr>
+                        {props.headings.map((heading, index) => <th key={index}>{heading}</th>)}
+                    </tr>
+                </thead>
+                <tbody>
+                    {props.children}
+                </tbody>
+            </table>
+            
+        </div>
     )
 }

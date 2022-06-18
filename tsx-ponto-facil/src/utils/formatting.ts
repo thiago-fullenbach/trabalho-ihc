@@ -5,13 +5,25 @@ export function formatCpf(cpf: string): string {
     return `${cpf.substring(0, 3)}.${cpf.substring(3, 6)}.${cpf.substring(6, 9)}-${cpf.substring(9, 11)}`
 }
 export function formatDate_dd_mm_yyyy(date: Date): string {
-    return `${(date.getDate() + ``).padStart(2, `0`)}/${(date.getMonth() + 1 + ``).padStart(2, ``)}/${date.getFullYear()}`
+    return `${(date.getDate() + ``).padStart(2, `0`)}/${(date.getMonth() + 1 + ``).padStart(2, `0`)}/${date.getFullYear()}`
 }
 export function toInputValue(date: Date | null): string {
     if (date === null) {
         return ``
     }
-    return `${date.getFullYear()}-${(date.getMonth() + 1 + ``).padStart(2, `0`)}-${(date.getDate() + ``).padStart(2, ``)}T${(date.getHours() + ``).padStart(2, ``)}:${(date.getMinutes() + ``).padStart(2, ``)}:${(date.getSeconds() + ``).padStart(2, ``)}`
+    return `${date.getFullYear()}-${(date.getMonth() + 1 + ``).padStart(2, `0`)}-${(date.getDate() + ``).padStart(2, `0`)}`;
+}
+export function DateConstructor(date: Date | null): Date | null {
+    if (date === null) {
+        return null;
+    }
+    return new Date(`${date.getUTCFullYear()}/${(date.getUTCMonth() + 1 + ``).padStart(2, `0`)}/${(date.getUTCDate() + ``).padStart(2, `0`)}`);
+}
+export function DateConstructorFromString(s: string): Date | null {
+    if (s.trim() === ``) {
+        return null;
+    }
+    return DateConstructor(new Date(s));
 }
 export function listItemsInPortuguese<T>(items: Array<T>): string {
     if (items.length === 0) {

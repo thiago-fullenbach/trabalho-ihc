@@ -6,4 +6,5 @@ export default class SearchedUser {
     data_nascimento = new Date()
     horas_diarias = 0
     login = ``
+    eh_admin_root = false
 }

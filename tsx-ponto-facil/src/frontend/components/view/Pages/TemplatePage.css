@@ -3,7 +3,7 @@
 .tp-page {
     margin: 0px;
     display: grid;
-    grid-template-columns: var(--aside-width) 1fr;
+    grid-template-columns: var(--aside-width) calc(100vw - var(--aside-width));
     grid-template-rows: 
         var(--header-height)
         1fr
@@ -45,11 +45,27 @@ footer.footer {
             1fr
             var(--footer-height);
 
-        grid-template-columns: var(--aside-width) 1fr;
+        grid-template-columns: var(--aside-width) calc(100vw - var(--aside-width));
         grid-template-areas: 
             "logo header"
             "menu menu"
             "content content"
             "footer footer";
+    }
+}
+
+@media(max-width: 576px) {
+    .tp-page {
+        grid-template-rows: 
+            var(--logo-height)
+            auto
+            1fr
+            var(--footer-height);
+        grid-template-columns: 100vw;
+        grid-template-areas: 
+            "logo"
+            "menu"
+            "content"
+            "footer";
     }
 }
