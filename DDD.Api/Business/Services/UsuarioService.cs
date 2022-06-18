@@ -428,6 +428,8 @@ public class UsuarioService : IUsuarioService
                     MensagensErro = new List<string> { "Acesso negado." }
                 };
             }
+            await _usuarioRepository.ExcluirSessoesAsync(id);
+            await _usuarioRepository.UpdateAcessosAsync(id, new List<Acesso>());
             await _usuarioRepository.DeleteAsync(id);
             await transaction.CommitAsync();
         }
@@ -473,6 +475,6 @@ public class UsuarioService : IUsuarioService
             Acesso acessoRepositorio = new AcessoAdapter(acesso);
             acessosRepositorio.Add(acessoRepositorio);
         }
-        await _usuarioRepository.InsertAcessosAsync(usuario.Id, acessosRepositorio);
+        await _usuarioRepository.UpdateAcessosAsync(usuario.Id, acessosRepositorio);
     }
 }

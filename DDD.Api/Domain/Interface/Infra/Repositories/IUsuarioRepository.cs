@@ -7,4 +7,5 @@ public interface IUsuarioRepository : IRepositoryBase<Usuario>
     Task UpdateAcessosAsync(int idUsuario, List<Acesso> acessos);
     Task<Usuario?> SelectByLoginOrDefaultAsync(string login);
     Task<Usuario?> SelectByCPFOrDefaultAsync(string cpf);
+    Task ExcluirSessoesAsync(int idUsuario);
 }

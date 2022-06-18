@@ -44,22 +44,11 @@ if (app.Environment.IsDevelopment())
 // app.UseHttpsRedirection();
 
 app.UseCors(permissoesCorsNome);
+app.Use(CargaMinimaMiddleware.ProcessarAsync);
 app.Use(ExceptionMiddleware.ProcessarAsync);
 
 app.UseAuthorization();
 
 app.MapControllers();
-
-using (var serviceScope = app.Services.CreateScope())
-{
-    var services = serviceScope.ServiceProvider;
-
-    var usuarioService = services.GetRequiredService<IUsuarioService>();
-    int idAdminRoot = await usuarioService.GetIdUsuarioAdminRootAsync();
-    if (idAdminRoot == 0)
-    {
-        await usuarioService.CarregarUsuariosAdminRootEImportarExportarAsync();
-    }
-}
 
 app.Run();

@@ -5,6 +5,6 @@ public class BackEndProd : IBackEndAmbiente
 {
     public string GetUrlDominioExpostaExternamente()
     {
-        return "https://ihc-n-ponto-facil-api.herokuapp.com";
+        return "http://ihc-n-ponto-facil-api.herokuapp.com";
     }
 }

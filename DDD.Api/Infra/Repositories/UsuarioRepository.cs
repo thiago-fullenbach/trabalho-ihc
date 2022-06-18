@@ -38,8 +38,19 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
         return collection;
     }
 
+    private IMongoCollection<Sessao> GetCollectionSessoess()
+    {
+        var collection = _connection.Client.GetDatabase(_databaseConfiguration.GetNomeBancoDados())
+            .GetCollection<Sessao>(_databaseConfiguration.GetNomeColecaoSessoes());
+        return collection;
+    }
+
     public async Task InsertAcessosAsync(int idUsuario, List<Acesso> acessos)
     {
+        if (acessos.Count() == 0)
+        {
+            return;
+        }
         if (!(await ExistsAsync(idUsuario)))
         {
             throw new ArgumentException("Usuario com esse id não encontrado.");
@@ -49,7 +60,6 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
             acesso.usuario_id = FormatTo24DigitHex(idUsuario.ToString());
         }
         await GetCollectionAcessos().InsertManyAsync(acessos);
-
     }
     
     public async Task UpdateAcessosAsync(int idUsuario, List<Acesso> acessos)
@@ -81,4 +91,9 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
         return usuario;
     }
 
+    public async Task ExcluirSessoesAsync(int idUsuario)
+    {
+        var idEm24Digit = FormatTo24DigitHex(idUsuario.ToString());
+        await GetCollectionSessoess().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+    }
 }
