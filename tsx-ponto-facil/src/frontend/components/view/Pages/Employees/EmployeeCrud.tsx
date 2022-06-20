@@ -11,7 +11,7 @@ import { getSessionStorageOrDefault, setSessionStorage } from "../../../../../ut
 
 import ApiUtil from '../../../../../chamada-api/ApiUtil';
 import LoadingModal from "../../../templates/LoadingModal/LoadingModal";
-import { DateConstructor, formatCpf, formatDate_dd_mm_yyyy, listItemsInPortuguese, mountMessage, mountMessageServerErrorIfDefault } from "../../../../../utils/formatting";
+import { DateConstructor, formatCpf, formatDate_dd_mm_yyyy, listItemsInPortuguese, mountMessage, mountMessageServerErrorIfDefault, toDisplayedValue } from "../../../../../utils/formatting";
 import HiddenEmployeeCrud from "./EmployeeCrudState/HiddenEmployeeCrud";
 import NewEmployeeCrud from "./EmployeeCrudState/NewEmployeeCrud";
 import EditEmployeeCrud from "./EmployeeCrudState/EditEmployeeCrud";
@@ -30,6 +30,7 @@ import EditUserDTOAdapter from "../../../../modelo/employee/DTO/Adapter/editUser
 import UserAdapter from "../../../../modelo/employee/Adapter/userAdapter";
 import UserAccess from "../../../../modelo/employee/userAccess";
 import EnResource from "../../../../modelo/enum/enResource";
+import MsgDialog from "../../../templates/MsgDialog/MsgDialog";
 
 type EmployeeCrudProps = {
     sessionState: SessionState
@@ -120,7 +121,9 @@ const initialState: EmployeeCrudState = {
         confirmTitle: "",
         confirmQuestion: "",
         isRemove: false,
-        idRemovedEntity: 0
+        idRemovedEntity: 0,
+        isActivation: false,
+        idActivatedEntity: 0
     }
 }
 
@@ -128,9 +131,11 @@ const tituloConfirmaExclusao = `Atenção!`
 
 export default (props: EmployeeCrudProps): JSX.Element => {
 
+    const emptyCallback = () => {}
     const [user, setUser] = useState(initialState.user)
     const [list, setList] = useState(initialState.list)
     const [msg, setMsg] = useState(initialState.msg)
+    const [tituloMsg, setTituloMsg] = useState(``)
     const [erro, setErro] = useState(initialState.erro)
     const [newUser, setNewUser] = useState(initialState.newUser)
     const [tempAccess, setTempAccess] = useState(initialState.tempAccess)
@@ -141,14 +146,19 @@ export default (props: EmployeeCrudProps): JSX.Element => {
         props.loadingState.updateLoading(true);
         (async (): Promise<void> => {
             let r = await ApiUtil.getAsync<SearchedUser[]>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/listarTodos`)
+            
             props.loadingState.updateLoading(false)
             let retrievedUsers = r.body !== undefined ? (r.body.getReturned() || []) : []
+            retrievedUsers.forEach(x => {
+                x.data_nascimento = new Date(x.data_nascimento)
+            });
             if (r.status === 200) {
                 setErro(false)
                 setList(retrievedUsers)
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body);
                 setErro(true)
+                setTituloMsg(message.genericError)
                 setMsg(mensagemCompleta)
             }
         })()
@@ -163,13 +173,15 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             let r = await ApiUtil.postAsync<DetailedUserDTO>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/insere`, postNewUser)
             props.loadingState.updateLoading(false)
             if (r.status === 200) {
-                setErro(false)
-                setMsg(message.employee.successCreated)
                 setEmployeeCrudState(EnEmployeeCrudState.Hidden)
                 refreshSearchedUsers()
+                setErro(false)
+                setTituloMsg(message.genericSuccess)
+                setMsg(message.employee.successCreated)
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body)
                 setErro(true)
+                setTituloMsg(message.genericError)
                 setMsg(mensagemCompleta)
             }
         })()
@@ -200,7 +212,12 @@ export default (props: EmployeeCrudProps): JSX.Element => {
         if (invalidFields.length > 0) {
             let camposInvalidos = listItemsInPortuguese(invalidFields)
             setErro(true)
+            setTituloMsg(message.genericError)
             setMsg(`É necessário preencher ${camposInvalidos}.`)
+        } else if (user.nova_senha !== user.confirmar_senha) {
+            setErro(true)
+            setTituloMsg(message.genericError)
+            setMsg(`O campo Nova Senha deve ser igual ao Confirmar Senha.`)
         } else {
             publicSaveNew()
         }
@@ -212,13 +229,15 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             let r = await ApiUtil.postAsync<DetailedUserDTO>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/atualiza`, postEditUser)
             props.loadingState.updateLoading(false)
             if (r.status === 200) {
-                setErro(false)
-                setMsg(message.employee.successUpdated)
                 setEmployeeCrudState(EnEmployeeCrudState.Hidden)
                 refreshSearchedUsers()
+                setErro(false)
+                setTituloMsg(message.genericSuccess)
+                setMsg(message.employee.successUpdated)
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body);
                 setErro(true)
+                setTituloMsg(message.genericError)
                 setMsg(mensagemCompleta)
             }
         })()
@@ -243,6 +262,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
         if (invalidFields.length > 0) {
             let camposInvalidos = listItemsInPortuguese(invalidFields)
             setErro(true)
+            setTituloMsg(message.genericError)
             setMsg(`É necessário preencher ${camposInvalidos}.`)
         } else {
             publicSaveEdit()
@@ -265,7 +285,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                 changedUser.cpf = event.target.value
                 break
             case `data_nascimento`:
-                changedUser.data_nascimento = DateConstructor(event.target.valueAsDate)
+                changedUser.data_nascimento = event.target.valueAsDate
                 break
             case `horas_diarias`:
                 changedUser.horas_diarias = event.target.valueAsNumber
@@ -312,8 +332,6 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             props.loadingState.updateLoading(false)
             if (r.status === 200) {
                 const loadedUser = new UserAdapter(r.body?.getReturned() || new DetailedUserDTO()).getRawUser()
-                loadedUser.data_nascimento = loadedUser.data_nascimento != null ? new Date(loadedUser.data_nascimento) : null
-                console.log(loadedUser);
                 setErro(false)
                 setMsg(``)
                 setEmployeeCrudState(EnEmployeeCrudState.Edit)
@@ -321,6 +339,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body)
                 setErro(true)
+                setTituloMsg(message.genericError)
                 setMsg(mensagemCompleta)
             }
         })()
@@ -331,13 +350,15 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             let r = await ApiUtil.postAsync<null>(props.sessionState.stringifiedSession, props.sessionState.updateStringifiedSession, props.sessionState.updateLoggedUser, `${ApiUtil.urlApiV1()}/Usuario/excluiPeloId?id=${idUser}`, {})
             props.loadingState.updateLoading(false)
             if (r.status === 200) {
-                setErro(false)
-                setMsg(message.employee.successRemoved)
                 setEmployeeCrudState(EnEmployeeCrudState.Hidden)
                 refreshSearchedUsers()
+                setErro(false)
+                setTituloMsg(message.genericSuccess)
+                setMsg(message.employee.successRemoved)
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body)
                 setErro(true)
+                setTituloMsg(message.genericError)
                 setMsg(mensagemCompleta)
             }
         })()
@@ -356,13 +377,13 @@ export default (props: EmployeeCrudProps): JSX.Element => {
         setConfirmModalProps(modalProps)
     }
     const confirmConfirmModal = (): void => {
+        closeConfirmModal()
         if (confirmModalProps.isRemove) {
             remove(confirmModalProps.idRemovedEntity)
         }
-        closeConfirmModal()
     }
     const copyToClipboard = (text: string): void => {
-        navigator.clipboard.writeText(text);
+        window.navigator.clipboard.writeText(text);
     }
     const renderRows = (): JSX.Element[] => {
         return list.map((user: SearchedUser): JSX.Element => {
@@ -375,7 +396,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                             onClick={() => copyToClipboard(formatCpf(user.cpf))}>
                             <FontAwesomeIcon icon={faClipboard} />
                         </button></td>
-                    <td>{formatDate_dd_mm_yyyy(new Date(user.data_nascimento))}</td>
+                    <td>{formatDate_dd_mm_yyyy(user.data_nascimento)}</td>
                     <td>{user.horas_diarias}</td>
                     <td>{user.login}</td>
                     <td className="d-flex">
@@ -420,11 +441,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
     }
     return (
         <Main {...headerProps}>
-            {msg && (
-                <div className={`alert alert-${erro ? 'danger' : 'success'}`} role="alert">
-                    {msg}
-                </div>
-            )}
+            
             {renderTable()}
             {renderForm()}
             {(confirmModalProps.confirmQuestion.length > 0)
@@ -433,6 +450,10 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                     handleConfirm={confirmConfirmModal}
                     confirmTitle={confirmModalProps.confirmTitle}
                     confirmQuestion={confirmModalProps.confirmQuestion} />}
+            
+            {msg && 
+                <MsgDialog typeAlert={erro ? 'danger' : 'success'} msgType={tituloMsg} msg={msg} onDismiss={() => { setMsg(``) }} />
+            }
         </Main>
     )
     

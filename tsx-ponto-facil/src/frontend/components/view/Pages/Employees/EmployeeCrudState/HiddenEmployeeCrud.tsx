@@ -13,7 +13,7 @@ export default (props: HiddenEmployeeCrudProps): JSX.Element => {
         <div className="form">
             <div className="row">
                 <div className="col-12 d-flex justify-content-end">
-                    <button className="btn btn-primary"
+                    <button className="btn btn-primary mt-3"
                         onClick={() => props.publicShowNewUserForm() }>
                         Novo Funcionário
                     </button>

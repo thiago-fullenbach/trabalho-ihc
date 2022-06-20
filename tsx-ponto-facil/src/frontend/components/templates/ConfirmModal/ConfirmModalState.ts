@@ -3,4 +3,6 @@ export default class ConfirmModalState {
     confirmQuestion = ``
     isRemove = false
     idRemovedEntity = 0
+    isActivation = false
+    idActivatedEntity = 0
 }

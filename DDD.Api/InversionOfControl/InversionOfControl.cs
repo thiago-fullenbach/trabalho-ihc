@@ -29,9 +29,9 @@ public static class InversionOfControl
         services.AddSingleton<IBatchAppConfiguration, BatchAppConfiguration>();
         services.AddScoped<MongoDbConnection>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IAcessoRepository, AcessoRepository>();
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<ISessaoRepository, SessaoRepository>();
-        services.AddScoped<IAcessoRepository, AcessoRepository>();
         services.AddScoped<ILocalRepository, LocalRepository>();
         services.AddScoped<IPresencaRepository, PresencaRepository>();
         return services;
@@ -39,14 +39,17 @@ public static class InversionOfControl
 
     public static IServiceCollection AdicionarModuloBusiness(this IServiceCollection services)
     {
+        services.AddScoped<IPresencaBusnModelIntegratedAdapter, PresencaBusnModelIntegratedAdapter>();
         services.AddScoped<ISessaoBusnModelIntegratedAdapter, SessaoBusnModelIntegratedAdapter>();
         services.AddScoped<IUsuarioBusnModelIntegratedAdapter, UsuarioBusnModelIntegratedAdapter>();
         services.AddScoped<IDetalheUsuarioDtoModelIntegratedAdapter, DetalheUsuarioDtoModelIntegratedAdapter>();
+        services.AddScoped<IPresencaPesquisadaDtoModelIntegratedAdapter, PresencaPesquisadaDtoModelIntegratedAdapter>();
         services.AddScoped<IUsuarioLogadoDtoModelIntegratedAdapter, UsuarioLogadoDtoModelIntegratedAdapter>();
         services.AddScoped<IUsuarioPesquisadoDtoModelIntegratedAdapter, UsuarioPesquisadoDtoModelIntegratedAdapter>();
         services.AddScoped<ISessaoAutenticadaDataService, SessaoAutenticadaDataService>();
         services.AddScoped<IMicroService, MicroService>();
         services.AddScoped<IAutorizacaoService, AutorizacaoService>();
+        services.AddScoped<IPresencaService, PresencaService>();
         services.AddScoped<IUsuarioService, UsuarioService>();
         return services;
     }

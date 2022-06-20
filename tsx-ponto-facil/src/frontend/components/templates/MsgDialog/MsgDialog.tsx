@@ -14,7 +14,7 @@ export default (props: MsgDialogProps): JSX.Element => {
 
 
     return (
-        <Alert className="dialog-msg" variant={props.typeAlert} onClose={() => props.onDismiss()} dismissible>
+        <Alert className="dialog-msg " variant={props.typeAlert} onClose={() => props.onDismiss()} dismissible>
             <Alert.Heading>{props.msgType}!</Alert.Heading>
             <p>{props.msg}</p>
         </Alert>

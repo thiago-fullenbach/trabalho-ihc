@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using DDD.Api.Business;
 using DDD.Api.Domain.Interface.Infra.Configuration.Database;
 using DDD.Api.Domain.Interface.Infra.Repositories;
 using DDD.Api.Domain.Interface.Infra.UnitOfWork;
@@ -9,26 +10,89 @@ using MongoDB.Driver;
 namespace DDD.Api.Infra.Repositories;
 public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
 {
-    public UsuarioRepository(IUnitOfWork uow, MongoDbConnection connection, IDatabaseConfiguration databaseConfiguration)
+    private readonly IAcessoRepository _acessoRepository;
+    public UsuarioRepository(IUnitOfWork uow,
+                             MongoDbConnection connection,
+                             IDatabaseConfiguration databaseConfiguration,
+                             IAcessoRepository acessoRepository)
         : base(uow, connection, databaseConfiguration)
     {
         NomeColecaoEntidade = databaseConfiguration.GetNomeColecaoUsuarios();
+        _acessoRepository = acessoRepository;
     }
 
-    protected override Expression<Func<Usuario, bool>> MontarCallbackFindById(int id)
+    public async Task<List<Usuario>> SelectAllAsync()
     {
-        var idEm24Digit = FormatTo24DigitHex(id.ToString());
-        return x => x.Id == idEm24Digit;
+        var usuarios = await GetCollection().Find(_ => true).ToListAsync();
+        foreach (var usuario in usuarios)
+        {
+            usuario.Id = FormatToStringifiedNumber(usuario.Id);
+        }
+        return usuarios;
     }
 
-    protected override string GetId(Usuario usuario)
+    public async Task<Usuario?> SelectByIdOrDefaultAsync(int id)
     {
-        return usuario.Id;
+        var id24Digit = FormatTo24DigitHex(id.ToString());
+        var usuario = await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync();
+        if (usuario == null)
+        {
+            return null;
+        }
+        usuario.Id = id.ToString();
+        return usuario;
     }
 
-    protected override void SetId(Usuario usuario, string id)
+    public async Task<int> SelectNextInsertIdAsync()
     {
-        usuario.Id = id;
+        var usuarios = await SelectAllAsync();
+        int maxId = 0;
+        foreach (var usuario in usuarios)
+        {
+            int id = usuario.Id.ParseZeroIfFails();
+            if (id > maxId)
+            {
+                maxId = id;
+            }
+        }
+        return maxId + 1;
+    }
+
+    public async Task InsertAsync(int insertId, Usuario usuario)
+    {
+        if (await ExistsAsync(insertId))
+        {
+            throw new ArgumentException("insertId já existe no banco de dados.");
+        }
+        usuario.Id = FormatTo24DigitHex(insertId.ToString());
+        await GetCollection().InsertOneAsync(usuario);
+    }
+
+    public async Task UpdateAsync(int id, Usuario usuario)
+    {
+        if (!(await ExistsAsync(id)))
+        {
+            throw new ArgumentException("usuario com esse id não encontrado.");
+        }
+        usuario.Id = FormatTo24DigitHex(id.ToString());
+        await GetCollection().ReplaceOneAsync(x => x.Id == usuario.Id, usuario);
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        if (!(await ExistsAsync(id)))
+        {
+            throw new ArgumentException("usuario com esse id não encontrado.");
+        }
+        var id24Digit = FormatTo24DigitHex(id.ToString());
+        await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+    }
+
+    public async Task<bool> ExistsAsync(int id)
+    {
+        var id24Digit = FormatTo24DigitHex(id.ToString());
+        var usuarioExiste = await GetCollection().Find(x => x.Id == id24Digit).AnyAsync();
+        return usuarioExiste;
     }
 
     private IMongoCollection<Acesso> GetCollectionAcessos()
@@ -38,7 +102,7 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
         return collection;
     }
 
-    private IMongoCollection<Sessao> GetCollectionSessoess()
+    private IMongoCollection<Sessao> GetCollectionSessoes()
     {
         var collection = _connection.Client.GetDatabase(_databaseConfiguration.GetNomeBancoDados())
             .GetCollection<Sessao>(_databaseConfiguration.GetNomeColecaoSessoes());
@@ -57,9 +121,11 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
         }
         foreach (var acesso in acessos)
         {
+            var nextIdAcesso = await _acessoRepository.SelectNextInsertIdAsync();
+            acesso.Id = FormatTo24DigitHex(nextIdAcesso.ToString());
             acesso.usuario_id = FormatTo24DigitHex(idUsuario.ToString());
+            await _acessoRepository.InsertAsync(nextIdAcesso, acesso);
         }
-        await GetCollectionAcessos().InsertManyAsync(acessos);
     }
     
     public async Task UpdateAcessosAsync(int idUsuario, List<Acesso> acessos)
@@ -94,6 +160,6 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
     public async Task ExcluirSessoesAsync(int idUsuario)
     {
         var idEm24Digit = FormatTo24DigitHex(idUsuario.ToString());
-        await GetCollectionSessoess().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+        await GetCollectionSessoes().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
     }
 }

@@ -13,7 +13,7 @@ import EnResource from "../../../../modelo/enum/enResource";
 const headerProps = {
     icon: faHome,
     title: "Início",
-    subtitle: "Registrar presença no trabalho e consultar pontos registrados"
+    subtitle: "Bem-vindo"
 }
 
 const baseUrl = 'http://localhost:3001/presencas';
@@ -78,25 +78,8 @@ export default (props: HomeProps): JSX.Element => {
 
     return (
         <Main {...headerProps} >
-                <div className="display-4">{props.sessionState.loggedUser?.Nome}</div>
-                <hr />
-                
-                {presencaList.length > 0 ? (
-                    <Table headings={[
-                        "#",
-                        "Tipo",
-                        "Horário",
-                        "Data",
-                        "Local",
-                        "Status"
-                    ]}>
-                        {/* {renderRows()} */}
-                    </Table>
-                ) : (<h3 className="d-flex justify-content-center my-5 text-secondary">Não existem registros de presença para este usuário</h3>)}
-
-                {props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.RegistrarPonto) && <button className="btn btn-primary" onClick={getLocation}>
-                    Registrar Presença
-                </button>}
+            <h3>Bem-vindo ao Sistema Ponto Fácil!</h3>
+            <p>Para começar, navegue por uma das funcionalidades do menu.</p>
         </Main>
     )
 }

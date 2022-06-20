@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DDD.Api.Domain.Interface.Business.Services.MicroService;
 using DDD.Api.Domain.Models.DtoModel;
 
@@ -11,10 +12,11 @@ public class MicroService : IMicroService
         var resposta = await clienteHttp.GetAsync(uriBuilder.Uri);
         resposta.EnsureSuccessStatusCode();
         var conteudo = await resposta.Content.ReadFromJsonAsync<DevolvidoMensagensDtoModel>();
-        if (conteudo == null)
+        if (conteudo?.Devolvido == null)
         {
             return default(T);
         }
-        return (T?)(conteudo.Devolvido);
+        var jsonElementCast = (JsonElement)conteudo.Devolvido;
+        return jsonElementCast.Deserialize<T>();
     }
 }

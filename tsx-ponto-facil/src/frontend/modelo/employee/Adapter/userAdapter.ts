@@ -13,7 +13,7 @@ export default class UserAdapter {
         rawUser.id = this.detailedUserAdaptee?.id || 0
         rawUser.nome = this.detailedUserAdaptee?.nome || ``
         rawUser.cpf = this.detailedUserAdaptee?.cpf || ``
-        rawUser.data_nascimento = this.detailedUserAdaptee?.data_nascimento || new Date()
+        rawUser.data_nascimento = new Date(this.detailedUserAdaptee?.data_nascimento || ``) 
         rawUser.horas_diarias = this.detailedUserAdaptee?.horas_diarias || 0
         rawUser.login = this.detailedUserAdaptee?.login || ``
         rawUser.acessos = this.detailedUserAdaptee?.acessos || []

@@ -24,9 +24,7 @@ export default (props: ConfirmModalProps): JSX.Element => {
           {props.confirmQuestion}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={props.handleClose}>
-            Não
-          </Button>
+          <Button variant="secondary" onClick={props.handleClose}>Não</Button>
           <Button variant="primary" onClick={props.handleConfirm}>Sim</Button>
         </Modal.Footer>
       </Modal>

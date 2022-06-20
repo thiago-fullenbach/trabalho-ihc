@@ -7,7 +7,7 @@ export default class ReturnedXMessagesFailureAdapter<T> implements IReturnedXMes
         this.adaptee = adaptee
     }
     getReturned(): T | null {
-        return this.adaptee.Devolvido || null
+        return (this.adaptee.Devolvido == undefined || this.adaptee.Devolvido == null) ? null : this.adaptee.Devolvido
     }
     setReturned(returned: T): void {
         this.adaptee.Devolvido = returned

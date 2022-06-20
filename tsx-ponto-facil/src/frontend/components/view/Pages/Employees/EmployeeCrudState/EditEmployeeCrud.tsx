@@ -1,5 +1,5 @@
 import React from "react";
-import { toInputValue } from "../../../../../../utils/formatting";
+import { toDisplayedValue } from "../../../../../../utils/formatting";
 import { getSessionStorageOrDefault, setSessionStorage } from "../../../../../../utils/useSessionStorage";
 import SessionState from "../../../../../main/SessionState";
 import User from "../../../../../modelo/employee/user";
@@ -56,7 +56,7 @@ export default (props: EditEmployeeCrudProps): JSX.Element => {
                                     <input type="date"
                                         className="form-control" 
                                         name="data_nascimento"
-                                        value={toInputValue(props.editUser.data_nascimento)}
+                                        value={toDisplayedValue(props.editUser.data_nascimento)}
                                         onChange={e => props.publicUpdateField(e)}
                                         placeholder="Selecione a data de nascimento..." />
                             </div>

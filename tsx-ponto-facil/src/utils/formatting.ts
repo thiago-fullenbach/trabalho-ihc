@@ -1,17 +1,52 @@
 import IReturnedXMessagesAdapter from "../chamada-api/DTO/DoServidorParaCliente/Adapter/IReturnedXMessagesAdapter"
 import { message } from "../frontend/modelo/message"
+import { isFieldValid } from "./valid"
 
 export function formatCpf(cpf: string): string {
     return `${cpf.substring(0, 3)}.${cpf.substring(3, 6)}.${cpf.substring(6, 9)}-${cpf.substring(9, 11)}`
 }
-export function formatDate_dd_mm_yyyy(date: Date): string {
-    return `${(date.getDate() + ``).padStart(2, `0`)}/${(date.getMonth() + 1 + ``).padStart(2, `0`)}/${date.getFullYear()}`
+export function formatCep(cep: string | null): string {
+    if (cep == null || !isFieldValid(cep)) {
+        return ``
+    }
+    let onlyNumbers = cep.replaceAll("-", "").replaceAll(".", "")
+    return `${onlyNumbers.substring(0, 5)}-${onlyNumbers.substring(5, 8)}`
 }
-export function toInputValue(date: Date | null): string {
+export function formatDate_dd_mm_yyyy(date: Date): string {
+    return `${(date.getUTCDate() + ``).padStart(2, `0`)}/${(date.getUTCMonth() + 1 + ``).padStart(2, `0`)}/${date.getUTCFullYear()}`
+}
+export function formatDate_hh_mm(date: Date): string {
+    return `${(date.getUTCHours() + ``).padStart(2, `0`)}:${(date.getUTCMinutes() + ``).padStart(2, `0`)}`
+}
+export function toDisplayedValue(date: Date | null): string {
+    if (date === null) {
+        return ``
+    }
+    return `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1 + ``).padStart(2, `0`)}-${(date.getUTCDate() + ``).padStart(2, `0`)}`;
+}
+export function toDisplayedHour(date: Date | null): string {
+    if (date === null) {
+        return ``
+    }
+    return `${(date.getUTCHours() + ``).padStart(2, `0`)}:${(date.getUTCMinutes() + ``).padStart(2, `0`)}`;
+}
+export function toDisplayedValueLocal(date: Date | null): string {
     if (date === null) {
         return ``
     }
     return `${date.getFullYear()}-${(date.getMonth() + 1 + ``).padStart(2, `0`)}-${(date.getDate() + ``).padStart(2, `0`)}`;
+}
+export function toDisplayedDate_dd_mm_yyyy_Local(date: Date | null): string {
+    if (date === null) {
+        return ``
+    }
+    return `${(date.getDate() + ``).padStart(2, `0`)}/${(date.getMonth() + 1 + ``).padStart(2, `0`)}/${date.getFullYear()}`;
+}
+export function toDisplayedHourLocal(date: Date | null): string {
+    if (date === null) {
+        return ``
+    }
+    return `${(date.getHours() + ``).padStart(2, `0`)}:${(date.getMinutes() + ``).padStart(2, `0`)}`;
 }
 export function DateConstructor(date: Date | null): Date | null {
     if (date === null) {
