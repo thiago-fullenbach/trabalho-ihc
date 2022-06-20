@@ -68,7 +68,7 @@ export default (props: NewPresenceCrudProps): JSX.Element => {
         props.updateOpenStreetMapReqCompleted(false);
         navigator.geolocation.getCurrentPosition(location => {
             const storeCoords = location.coords
-            axios.get(`http://nominatim.openstreetmap.org/reverse?format=json&lat=${storeCoords.latitude}&lon=${storeCoords.longitude}&zoom=18&addressdetails=1`)
+            axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${storeCoords.latitude}&lon=${storeCoords.longitude}&zoom=18&addressdetails=1`)
             .then(response => {
                 let loadedPlace: Place = new PlaceAdapter(response.data)
                 props.updatePlace(loadedPlace)

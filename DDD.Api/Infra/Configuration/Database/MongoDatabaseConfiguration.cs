@@ -16,7 +16,7 @@ public class MongoDatabaseConfiguration : IDatabaseConfiguration
 
     public string GetNomeBancoDados()
     {
-        return _configuration["BancoDadosMongoDB:BancoDados"];
+        return _configuration["NOME_BANCO_DADOS_NOSQL"];
     }
 
     public string GetNomeColecaoUsuarios()
