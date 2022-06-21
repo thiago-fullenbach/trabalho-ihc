@@ -19,6 +19,8 @@ export default class Periodo {
     }
     horasTrabalhadasByFilter = (filtros: PresenceFilter): number => {
         let diasTrabalhados = this.getDiasAssociadosLocal()
+            .filter(x => new Date(toDisplayedValue(x)).getTime() >= (filtros.data_inicio ?? new Date()).getTime()
+                && new Date(toDisplayedValue(x)).getTime() <= (filtros.data_fim ?? new Date()).getTime())
         if (horaFoiInformada(filtros.hora_inicio) && horaFoiInformada(filtros.hora_fim) && horaComparavel(filtros.hora_inicio) > horaComparavel(filtros.hora_fim)) {
             let inicioPeriodo1 = `00:00`
             let fimPeriodo1 = filtros.hora_fim
@@ -29,13 +31,11 @@ export default class Periodo {
                 let horasPeriodo2 = interseccaoHorasEntre(inicioPeriodo2, fimPeriodo2, this.inicio, this.fim)
                 return horasPeriodo1 + horasPeriodo2
             } else {
-                let diaSeguinteInicio = diasTrabalhados[1]
-                let horasPeriodo1PrimeiroDia = interseccaoHorasEntre(inicioPeriodo1, fimPeriodo1, this.inicio, diaSeguinteInicio)
-                let horasPeriodo2PrimeiroDia = interseccaoHorasEntre(inicioPeriodo2, fimPeriodo2, this.inicio, diaSeguinteInicio)
+                let horasPeriodo1PrimeiroDia = interseccaoHorasEntre(inicioPeriodo1, fimPeriodo1, this.inicio, null)
+                let horasPeriodo2PrimeiroDia = interseccaoHorasEntre(inicioPeriodo2, fimPeriodo2, this.inicio, null)
                 let total = horasPeriodo1PrimeiroDia + horasPeriodo2PrimeiroDia
-                let diaFim = diasTrabalhados[diasTrabalhados.length - 1]
-                let horasPeriodo1UltimoDia = interseccaoHorasEntre(inicioPeriodo1, fimPeriodo1, diaFim, this.fim)
-                let horasPeriodo2UltimoDia = interseccaoHorasEntre(inicioPeriodo2, fimPeriodo2, diaFim, this.fim)
+                let horasPeriodo1UltimoDia = interseccaoHorasEntre(inicioPeriodo1, fimPeriodo1, null, this.fim)
+                let horasPeriodo2UltimoDia = interseccaoHorasEntre(inicioPeriodo2, fimPeriodo2, null, this.fim)
                 total += horasPeriodo1UltimoDia + horasPeriodo2UltimoDia
                 let horasDiaIntermediarioQualquer = horaComparavel(fimPeriodo1) - horaComparavel(`00:00`) - (horaComparavel(inicioPeriodo1) - horaComparavel(`00:00`))
                 horasDiaIntermediarioQualquer += horaComparavel(fimPeriodo2) - horaComparavel(`00:00`) - (horaComparavel(inicioPeriodo2) - horaComparavel(`00:00`))
@@ -48,11 +48,9 @@ export default class Periodo {
             if (diasTrabalhados.length <= 1) {
                 return interseccaoHorasEntre(inicioPeriodo, fimPeriodo, this.inicio, this.fim)
             } else {
-                let diaSeguinteInicio = diasTrabalhados[1]
-                let horasPrimeiroDia = interseccaoHorasEntre(inicioPeriodo, fimPeriodo, this.inicio, diaSeguinteInicio)
+                let horasPrimeiroDia = interseccaoHorasEntre(inicioPeriodo, fimPeriodo, this.inicio, null)
                 let total = horasPrimeiroDia
-                let diaFim = diasTrabalhados[diasTrabalhados.length - 1]
-                let horasUltimoDia = interseccaoHorasEntre(inicioPeriodo, fimPeriodo, diaFim, this.fim)
+                let horasUltimoDia = interseccaoHorasEntre(inicioPeriodo, fimPeriodo, null, this.fim)
                 total += horasUltimoDia
                 let horasDiaIntermediarioQualquer = horaComparavel(fimPeriodo) - horaComparavel(`00:00`) - (horaComparavel(inicioPeriodo) - horaComparavel(`00:00`))
                 total += horasDiaIntermediarioQualquer * (diasTrabalhados.length - 2)

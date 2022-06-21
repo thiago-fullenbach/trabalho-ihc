@@ -1,5 +1,6 @@
 import Periodo from "../frontend/modelo/presence/periodo"
 import SearchedPresence from "../frontend/modelo/presence/searchedPresence"
+import { toDisplayedValue } from "./formatting"
 
 const horaFoiInformada = (hora: string): boolean => {
     return /[0-9][0-9]:[0-9][0-9]/.test(hora)
@@ -75,9 +76,17 @@ const obterPeriodosBySearchedPresenceArray = (presencas: SearchedPresence[]): Pe
     }
     return usuarioPeriodos
 }
-const interseccaoHorasEntre = (inicioHora1: string, fimHora1: string, inicioHora2: Date, fimHora2: Date): number => {
-    let maiorInicio = [horaComparavel(inicioHora1), extraiHorasLocal(inicioHora2)].sort((a, b) => b - a)[0]
-    let menorFim = [horaComparavel(fimHora1) + horaComparavel(`00:01`) - horaComparavel(`00:00`), extraiHorasLocal(fimHora2)].sort((a, b) => a - b)[0]
+const interseccaoHorasEntre = (inicioHora1: string, fimHora1: string, inicioHora2: Date | null, fimHora2: Date | null): number => {
+    const comparativo = new Date(toDisplayedValue(inicioHora2)).getTime()
+    const offset = (inicioHora2 ?? new Date()).getTimezoneOffset() * 60 * 1000
+    let maiorInicio = [
+        horaComparavel(inicioHora1) - horaComparavel(`00:00`),
+        inicioHora2 != null ? inicioHora2.getTime() - offset - comparativo : 0
+    ].sort((a, b) => b - a)[0]
+    let menorFim = [
+        horaComparavel(fimHora1) - horaComparavel(`00:00`) + horaComparavel(`00:01`) - horaComparavel(`00:00`),
+        fimHora2 != null ? fimHora2.getTime() - offset - comparativo : getTimeDia()
+    ].sort((a, b) => a - b)[0]
     let horas = menorFim - maiorInicio
     return horas > 0 ? horas : 0
 }
