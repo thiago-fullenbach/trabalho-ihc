@@ -60,6 +60,9 @@ export function DateConstructorFromString(s: string): Date | null {
     }
     return DateConstructor(new Date(s));
 }
+export function formataMinutosTrabalhados(minutos: number): string {
+    return minutos >= 60 ? (Math.floor(minutos / 60) + 'h' + ((minutos % 60) + '').padStart(2, `0`) + 'm') : (minutos + 'm')
+}
 export function listItemsInPortuguese<T>(items: Array<T>): string {
     if (items.length === 0) {
         return ``

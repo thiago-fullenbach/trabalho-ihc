@@ -1,6 +1,6 @@
-import { faTrash, faPencil, faUsers, faClipboard, faUserCheck } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPencil, faUsers, faClipboard, faUserCheck, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
-import React, { useEffect, useState } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import Main from "../../../templates/Main/Main";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -11,7 +11,7 @@ import { getSessionStorageOrDefault, setSessionStorage } from "../../../../../ut
 
 import ApiUtil from '../../../../../chamada-api/ApiUtil';
 import LoadingModal from "../../../templates/LoadingModal/LoadingModal";
-import { DateConstructor, formatCpf, formatDate_dd_mm_yyyy, formatDate_hh_mm, listItemsInPortuguese, mountMessage, mountMessageServerErrorIfDefault, toDisplayedDate_dd_mm_yyyy_Local, toDisplayedHourLocal, toDisplayedValueLocal } from "../../../../../utils/formatting";
+import { DateConstructor, formataMinutosTrabalhados, formatCpf, formatDate_dd_mm_yyyy, formatDate_hh_mm, listItemsInPortuguese, mountMessage, mountMessageServerErrorIfDefault, toDisplayedDate_dd_mm_yyyy_Local, toDisplayedHour, toDisplayedHourLocal, toDisplayedValue, toDisplayedValueLocal } from "../../../../../utils/formatting";
 import ConfirmModal from "../../../templates/ConfirmModal/ConfirmModal";
 import { resourceDescription } from "../../../../modelo/resourceDescription";
 import SessionState from "../../../../main/SessionState";
@@ -37,6 +37,10 @@ import HiddenPresenceCrud from "./PresenceCrudState/HiddenPresenceCrud";
 import NewPresenceCrud from "./PresenceCrudState/NewPresenceCrud";
 import Place from "../../../../modelo/place/place";
 import MsgDialog from "../../../templates/MsgDialog/MsgDialog";
+import "./PresenceCrud.css";
+import Worktime from "../../../../modelo/presence/worktime";
+import Periodo from "../../../../modelo/presence/periodo";
+import { addHoras, addHorasCapped, horaComparavel, horaFoiInformada, obterPeriodosBySearchedPresenceArray, subtractHoras } from "../../../../../utils/timeAndHour";
 
 type EmployeeCrudProps = {
     sessionState: SessionState
@@ -48,6 +52,7 @@ type PresenceCrudState = {
     novaPresencaEhEntrada: boolean | null,
     newPresence: NewPresence
     list: SearchedPresence[]
+    listWorktimes: Worktime[]
     msg: string
     erro: boolean
     isNewPresence: boolean
@@ -66,11 +71,12 @@ const initialState: PresenceCrudState = {
         usuario_nome: ``,
         eh_entrada: null,
         data_inicio: null,
-        hora_inicio: null,
         data_fim: null,
-        hora_fim: null,
+        hora_inicio: ``,
+        hora_fim: ``,
         local_resumo: ``,
-        tem_visto: null
+        tem_visto: null,
+        calcula_hora: false
     },
     novaPresencaEhEntrada: null,
     newPresence: {
@@ -86,6 +92,7 @@ const initialState: PresenceCrudState = {
         } 
     },
     list: [],
+    listWorktimes: [],
     msg: "",
     erro: false,
     isNewPresence: false,
@@ -116,6 +123,10 @@ export default (props: EmployeeCrudProps): JSX.Element => {
     const [confirmModalProps, setConfirmModalProps] = useState(initialState.confirmModalProps)
     const [apiReqCompleted, setApiReqCompleted] = useState(true)
     const [openStreetMapReqCompleted, setOpenStreetMapReqCompleted] = useState(true)
+    const [exibirFiltros, setExibirFiltros] = useState(true)
+    const [exibirInfoCalc, setExibirInfoCalc] = useState(false)
+    const [listAppliedFilter, setListAppliedFilter] = useState(initialState.list)
+    const [listWorktimes, setListWorktimes] = useState(initialState.listWorktimes)
 
     const informaErroGenerico = (mensagemErro: string): void => {
         setErro(true)
@@ -143,6 +154,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                     x.datahora_presenca = new Date(x.datahora_presenca)
                 });
                 setList(retrievedPresences)
+                updateListAppliedFilter(retrievedPresences, presenceFilter)
             } else {
                 let mensagemCompleta = mountMessageServerErrorIfDefault(r.body);
                 setErro(true)
@@ -160,7 +172,11 @@ export default (props: EmployeeCrudProps): JSX.Element => {
     useEffect(() => {
         props.loadingState.updateLoading(!apiReqCompleted || !openStreetMapReqCompleted)
     }, [openStreetMapReqCompleted])
-    
+    useEffect(() => {
+        if (presenceFilter.calcula_hora) {
+            calcularBancoHoras()
+        }
+    }, [listAppliedFilter])
     const publicSaveNew = (): void => {
         setApiReqCompleted(false);
         (async (): Promise<void> => {
@@ -219,8 +235,28 @@ export default (props: EmployeeCrudProps): JSX.Element => {
         setMsg(initialState.msg)
         setIsNewPresence(initialState.isNewPresence)
     }
+    const updateListAppliedFilter = (presencas: SearchedPresence[], filtros: PresenceFilter): void => {
+        setListAppliedFilter(presencas.filter(x => {
+            return (!isFieldValid(filtros.usuario_nome) || x.usuario_nome.indexOf(filtros.usuario_nome.trim().toUpperCase()) != -1)
+            && (filtros.eh_entrada === null || x.eh_entrada === filtros.eh_entrada)
+            && (filtros.data_inicio === null || new Date(toDisplayedValue(x.datahora_presenca)).getTime() >= filtros.data_inicio.getTime())
+            && (filtros.data_fim === null || new Date(toDisplayedValue(x.datahora_presenca)).getTime() <= filtros.data_fim.getTime())
+            && ((horaFoiInformada(filtros.hora_inicio) && horaFoiInformada(filtros.hora_fim) && horaComparavel(filtros.hora_inicio) > horaComparavel(filtros.hora_fim))
+            ? horaComparavel(toDisplayedHourLocal(x.datahora_presenca)) >= horaComparavel(filtros.hora_inicio) || horaComparavel(toDisplayedHourLocal(x.datahora_presenca)) <= horaComparavel(filtros.hora_fim)
+            : (!horaFoiInformada(filtros.hora_inicio) || horaComparavel(toDisplayedHourLocal(x.datahora_presenca)) >= horaComparavel(filtros.hora_inicio)
+            && !horaFoiInformada(filtros.hora_fim) || horaComparavel(toDisplayedHourLocal(x.datahora_presenca)) <= horaComparavel(filtros.hora_fim)))
+            && (!isFieldValid(filtros.local_resumo) || x.local_resumo.toUpperCase().indexOf(filtros.local_resumo.trim().toUpperCase()) != -1)
+            && (filtros.tem_visto === null || x.tem_visto === filtros.tem_visto)
+        }))
+
+    }
+    const clearFilter = (): void => {
+        setPresenceFilter(initialState.presenceFilter)
+        setListAppliedFilter(list)
+    }
     const updateFilterInputField = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const changedFilter = { ...presenceFilter }
+        let horaDestructured: string[]
         switch (event.target.name) {
             case `usuario`:
                 changedFilter.usuario_nome = event.target.value
@@ -228,14 +264,56 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             case `data_inicio`:
                 changedFilter.data_inicio = event.target.valueAsDate
                 break
-            case `hora_inicio`:
-                changedFilter.hora_inicio = event.target.valueAsDate
-                break
             case `data_fim`:
                 changedFilter.data_fim = event.target.valueAsDate
                 break
-            case `hora_fim`:
-                changedFilter.hora_fim = event.target.valueAsDate
+            case `hora_hh_inicio`:
+                if (changedFilter.hora_inicio === ``) {
+                    changedFilter.hora_inicio = `:`
+                }
+                horaDestructured = changedFilter.hora_inicio.split(':')
+                changedFilter.hora_inicio = `${event.target.value}:${horaDestructured[1]}`
+                if (changedFilter.hora_inicio === `:`) {
+                    changedFilter.hora_inicio = ``
+                }
+                if (event.target.value.length >= 2) {
+                    changedFilter.hora_inicio = `${horaValidaHh(changedFilter.hora_inicio)}:${horaValidaMm(changedFilter.hora_inicio)}`
+                    document.getElementById("hora_mm_inicio")?.focus()
+                }
+                break
+            case `hora_mm_inicio`:
+                if (changedFilter.hora_inicio === ``) {
+                    changedFilter.hora_inicio = `:`
+                }
+                horaDestructured = changedFilter.hora_inicio.split(':')
+                changedFilter.hora_inicio = `${horaDestructured[0]}:${event.target.value}`
+                if (changedFilter.hora_inicio === `:`) {
+                    changedFilter.hora_inicio = ``
+                }
+                break
+            case `hora_hh_fim`:
+                if (changedFilter.hora_fim === ``) {
+                    changedFilter.hora_fim = `:`
+                }
+                horaDestructured = changedFilter.hora_fim.split(':')
+                changedFilter.hora_fim = `${event.target.value}:${horaDestructured[1]}`
+                if (changedFilter.hora_fim === `:`) {
+                    changedFilter.hora_fim = ``
+                }
+                if (event.target.value.length >= 2) {
+                    changedFilter.hora_fim = `${horaValidaHh(changedFilter.hora_fim)}:${horaValidaMm(changedFilter.hora_fim)}`
+                    document.getElementById("hora_mm_fim")?.focus()
+                }
+                break
+            case `hora_mm_fim`:
+                if (changedFilter.hora_fim === ``) {
+                    changedFilter.hora_fim = `:`
+                }
+                horaDestructured = changedFilter.hora_fim.split(':')
+                changedFilter.hora_fim = `${horaDestructured[0]}:${event.target.value}`
+                if (changedFilter.hora_fim === `:`) {
+                    changedFilter.hora_fim = ``
+                }
                 break
             case `local`:
                 changedFilter.local_resumo = event.target.value
@@ -244,6 +322,55 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                 break
         }
         setPresenceFilter(changedFilter)
+        updateListAppliedFilter(list, changedFilter)
+    }
+    const horaValidaHh = (hora: string): string => {
+        if (hora === ``) {
+            return ``
+        }
+        let horaDestructured = hora.split(':')
+        horaDestructured[0] = horaDestructured[0].trim()
+        if (/[^0-9]+/.test(horaDestructured[0]) || horaDestructured[0] === ``) {
+            return ``
+        }
+        let hh = parseInt(horaDestructured[0])
+        if (hh >= 24) {
+            return `23`
+        }
+        return horaDestructured[0].padStart(2, `0`)
+    }
+    const horaValidaMm = (hora: string): string => {
+        if (hora === ``) {
+            return ``
+        }
+        let horaDestructured = hora.split(':')
+        horaDestructured[1] = horaDestructured[1].trim()
+        if (/[^0-9]+/.test(horaDestructured[1]) || horaDestructured[1] === ``) {
+            return ``
+        }
+        let hh = parseInt(horaDestructured[1])
+        if (hh >= 60) {
+            return `59`
+        }
+        return horaDestructured[1].padStart(2, `0`)
+    }
+    const validarHoraInicio = () => {
+        if (presenceFilter.hora_inicio === ``) {
+            return;
+        }
+        const changedFilter = { ...presenceFilter }
+        changedFilter.hora_inicio = `${horaValidaHh(changedFilter.hora_inicio)}:${horaValidaMm(changedFilter.hora_inicio)}`
+        setPresenceFilter(changedFilter)
+        updateListAppliedFilter(list, changedFilter)
+    }
+    const validarHoraFim = () => {
+        if (presenceFilter.hora_fim === ``) {
+            return;
+        }
+        const changedFilter = { ...presenceFilter }
+        changedFilter.hora_fim = `${horaValidaHh(changedFilter.hora_fim)}:${horaValidaMm(changedFilter.hora_fim)}`
+        setPresenceFilter(changedFilter)
+        updateListAppliedFilter(list, changedFilter)
     }
     const updateFilterSelectField = (event: React.ChangeEvent<HTMLSelectElement>): void => {
         const changedFilter = { ...presenceFilter }
@@ -282,6 +409,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                 break
         }
         setPresenceFilter(changedFilter)
+        updateListAppliedFilter(list, changedFilter)
     }
     const updateInputField = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const changedPresence = { ...newPresence }
@@ -309,6 +437,62 @@ export default (props: EmployeeCrudProps): JSX.Element => {
         changedPresence.local = { ...place }
         setNewPresence(changedPresence)
         setOpenStreetMapReqCompleted(true)
+    }
+    const calcularBancoHoras = () => {
+        const funcionarioSet = new Set<number>(listAppliedFilter.map(x => x.usuario_id))
+        const funcionariosArray: number[] = []
+        funcionarioSet.forEach(x => funcionariosArray.push(x));
+        setListWorktimes(funcionariosArray.map(x => {
+            const usuarioPresencas = listAppliedFilter
+                .filter(y => y.usuario_id === x)
+                .sort((a, b) => a.datahora_presenca.getTime() - b.datahora_presenca.getTime())
+            const usuarioPeriodos = obterPeriodosBySearchedPresenceArray(usuarioPresencas)
+            let tempoTrabalhadoMilliseg = usuarioPeriodos.reduce((prev, cur) => prev + cur.horasTrabalhadasByFilter(presenceFilter), 0)
+            const usuarioWorktime = new Worktime()
+            usuarioWorktime.usuario_nome = usuarioPresencas[0].usuario_nome
+            usuarioWorktime.usuario_horas_diarias = usuarioPresencas[0].usuario_horas_diarias
+            usuarioWorktime.tempo_trabalhado_minutos = Math.floor(tempoTrabalhadoMilliseg / 60 / 1000)
+            let periodoFiltros = new Periodo()
+            periodoFiltros.inicio = presenceFilter.data_inicio ?? new Date()
+            periodoFiltros.fim = presenceFilter.data_fim ?? new Date()
+            usuarioWorktime.qtd_dias = periodoFiltros.getDiasAssociadosLocal()
+                .filter(y => y.getUTCDay() != 0 && y.getUTCDay() != 6).length
+            console.log(usuarioWorktime.usuario_horas_diarias)
+            const totalPlanejadoMinutos = usuarioWorktime.qtd_dias * usuarioWorktime.usuario_horas_diarias * 60
+            const trabalhadoExtraMinutos = usuarioWorktime.tempo_trabalhado_minutos > totalPlanejadoMinutos ? usuarioWorktime.tempo_trabalhado_minutos - totalPlanejadoMinutos : 0
+            const trabalhadoFaltaMinutos = totalPlanejadoMinutos > usuarioWorktime.tempo_trabalhado_minutos ? totalPlanejadoMinutos - usuarioWorktime.tempo_trabalhado_minutos : 0
+            console.log(totalPlanejadoMinutos, trabalhadoExtraMinutos, trabalhadoFaltaMinutos)
+            return usuarioWorktime;
+        }))
+    }
+    const updateCalcHora = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        if (!e.target.checked) {
+            const changedFilter = { ...presenceFilter }
+            changedFilter.calcula_hora = false
+            setPresenceFilter(changedFilter)
+            return
+        }
+        if (presenceFilter.data_inicio !== null && presenceFilter.data_fim !== null) {
+            calcularBancoHoras()
+            const changedFilter = { ...presenceFilter }
+            changedFilter.calcula_hora = true
+            setPresenceFilter(changedFilter)
+            return
+        }
+        e.preventDefault()
+        e.target.checked = false
+        let invalidFields = []
+        if (presenceFilter.data_inicio == null) {
+            invalidFields.push(`Desde a Data`)
+        }
+        if (presenceFilter.data_fim == null) {
+            invalidFields.push(`Até a Data`)
+        }
+        let camposInvalidos = listItemsInPortuguese(invalidFields)
+        setErro(true)
+        setTituloMsg(message.genericError)
+        setMsg(`É necessário preencher ${camposInvalidos}.`)
+
     }
     const publicShowNewPresenceForm = (): void => {
         clear()
@@ -379,7 +563,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
         }
     }
     const renderRows = (): JSX.Element[] => {
-        return list.map((presence: SearchedPresence): JSX.Element => {
+        return listAppliedFilter.map((presence: SearchedPresence): JSX.Element => {
             return (
                 <tr key={presence.id}>
                     <td>{presence.usuario_nome.split(' ')[0]}</td>
@@ -395,6 +579,21 @@ export default (props: EmployeeCrudProps): JSX.Element => {
                             disabled={presence.tem_visto} />
                          : <input type="checkbox" className="invisible" />}
                     </td>
+                </tr>
+            )
+        })
+    }
+    const renderRowsCalcHora = (): JSX.Element[] => {
+        return listWorktimes.map((worktime: Worktime, index: number): JSX.Element => {
+            const totalPlanejadoMinutos = worktime.qtd_dias * worktime.usuario_horas_diarias * 60
+            const trabalhadoExtraMinutos = worktime.tempo_trabalhado_minutos > totalPlanejadoMinutos ? worktime.tempo_trabalhado_minutos - totalPlanejadoMinutos : 0
+            const trabalhadoFaltaMinutos = totalPlanejadoMinutos > worktime.tempo_trabalhado_minutos ? totalPlanejadoMinutos - worktime.tempo_trabalhado_minutos : 0
+            return (
+                <tr key={index}>
+                    <td>{worktime.usuario_nome.split(' ')[0]}</td>
+                    <td>{formataMinutosTrabalhados(worktime.tempo_trabalhado_minutos)}</td>
+                    <td>{formataMinutosTrabalhados(trabalhadoExtraMinutos)}</td>
+                    <td>{formataMinutosTrabalhados(trabalhadoFaltaMinutos)}</td>
                 </tr>
             )
         })
@@ -415,10 +614,191 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             </Table>
         )
     }
+    const renderTableCalcHora = (): JSX.Element => {
+        return (
+            <Table headings={
+                [
+                    "Funcionário",
+                    "Horas Trabalhadas",
+                    "Extra",
+                    "Faltante",
+                ]
+            }>
+                {renderRowsCalcHora()}
+            </Table>
+        )
+    }
+    const renderFilter = (): JSX.Element => {
+        return (
+            <div>
+                
+                <div className="form">
+                    <div className="row">
+                        <div className="col-12 d-flex justify-content-start">
+                            <button className="btn btn-primary mt-3 mb-3"
+                                onClick={() => setExibirFiltros(!exibirFiltros) }>
+                                {exibirFiltros ? `Esconder Filtros` : `Mostrar Filtros`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {exibirFiltros && <div className="form alert alert-info">
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="form-group">
+                                <div className="input-group row">
+                                    <div className="input col-md-6 col-12">
+                                        <label><strong>Filtros</strong></label>
+                                    </div>
+                                </div>
+
+                                <div className="input-group row">
+                                    <div className="input col-md-6 col-12 mt-3">
+                                        <label>Funcionário</label>
+                                        <input type="text" 
+                                            className="form-control"
+                                            name="usuario"
+                                            value={presenceFilter.usuario_nome}
+                                            onChange={e => updateFilterInputField(e)} />
+                                    </div>
+                                    <div className="input col-md-6 col-12 mt-3">
+                                        <label>Tipo da Presença</label>
+                                        <select
+                                            className="form-control" 
+                                            name="select_tipo_presenca"
+                                            onChange={e => updateFilterSelectField(e)}
+                                            value={presenceFilter.eh_entrada == null ? EnSelectTipoPresenca.Selecione.enValue :
+                                                (presenceFilter.eh_entrada ? EnSelectTipoPresenca.InicioTrabalho.enValue : EnSelectTipoPresenca.FimTrabalho.enValue)} >
+                                            <option value={EnSelectTipoPresenca.Selecione.enValue} >{EnSelectTipoPresenca.Selecione.enDesc}</option>
+                                            <option value={EnSelectTipoPresenca.InicioTrabalho.enValue} >{EnSelectTipoPresenca.InicioTrabalho.enDesc}</option>
+                                            <option value={EnSelectTipoPresenca.FimTrabalho.enValue} >{EnSelectTipoPresenca.FimTrabalho.enDesc}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="input-group row">
+                                    <div className="input col-md-6 col-12 mt-3">
+                                        <label>Desde a Data</label>
+                                        <input type="date"
+                                            className="form-control" 
+                                            name="data_inicio"
+                                            value={toDisplayedValue(presenceFilter.data_inicio)}
+                                            onChange={e => updateFilterInputField(e)} />
+                                    </div>
+                                    <div className="input col-md-6 col-12 mt-3">
+                                        <label>Até a Data</label>
+                                        <input type="date"
+                                            className="form-control" 
+                                            name="data_fim"
+                                            value={toDisplayedValue(presenceFilter.data_fim)}
+                                            onChange={e => updateFilterInputField(e)} />
+                                    </div>
+                                </div>
+                                <div className="input-group row">
+                                    <div className="input col-md-6 col-12 mt-3">
+                                        <label>Desde a Hora</label>
+                                        <div className="d-flex">
+                                            <input type="text" 
+                                                maxLength={2}
+                                                name="hora_hh_inicio"
+                                                className="horaHH"
+                                                value={presenceFilter.hora_inicio.split(':').length == 2 ? presenceFilter.hora_inicio.split(':')[0] : ''}
+                                                onChange={e => updateFilterInputField(e)}
+                                                onBlur={() => validarHoraInicio()} />
+                                            <span>:</span>
+                                            <input type="text" id="hora_mm_inicio"
+                                                maxLength={2}
+                                                name="hora_mm_inicio"
+                                                className="horaMM"
+                                                value={presenceFilter.hora_inicio.split(':').length == 2 ? presenceFilter.hora_inicio.split(':')[1] : ''}
+                                                onChange={e => updateFilterInputField(e)}
+                                                onBlur={() => validarHoraInicio()} />
+                                        </div>
+                                    </div>
+                                    <div className="input col-md-6 col-12 mt-3">
+                                        <label>Até a Hora</label>
+                                        <div className="d-flex">
+                                            <input type="text"
+                                                maxLength={2}
+                                                name="hora_hh_fim"
+                                                className="horaHH"
+                                                value={presenceFilter.hora_fim.split(':').length == 2 ? presenceFilter.hora_fim.split(':')[0] : ''}
+                                                onChange={e => updateFilterInputField(e)}
+                                                onBlur={() => validarHoraFim()} />
+                                            <span>:</span>
+                                            <input type="text" id="hora_mm_fim"
+                                                maxLength={2}
+                                                name="hora_mm_fim"
+                                                className="horaMM"
+                                                value={presenceFilter.hora_fim.split(':').length == 2 ? presenceFilter.hora_fim.split(':')[1] : ''}
+                                                onChange={e => updateFilterInputField(e)}
+                                                onBlur={() => validarHoraFim()} />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="input-group row">
+                                    <div className="input col-md-6 col-12 mt-3">
+                                        <label>Local</label>
+                                        <input type="text"
+                                            className="form-control" 
+                                            name="local"
+                                            value={presenceFilter.local_resumo}
+                                            onChange={e => updateFilterInputField(e)} />
+                                    </div>
+                                    <div className="input col-md-6 col-12 mt-3">
+                                        <label>Visto</label>
+                                        <select
+                                            className="form-control" 
+                                            name="tipo_visto"
+                                            onChange={e => updateFilterSelectField(e)}
+                                            value={presenceFilter.tem_visto == null ? EnSelectTipoTemVisto.Selecione.enValue :
+                                                (presenceFilter.tem_visto ? EnSelectTipoTemVisto.ComVisto.enValue : EnSelectTipoTemVisto.SemVisto.enValue)} >
+                                            <option value={EnSelectTipoTemVisto.Selecione.enValue} >{EnSelectTipoTemVisto.Selecione.enDesc}</option>
+                                            <option value={EnSelectTipoTemVisto.SemVisto.enValue} >{EnSelectTipoTemVisto.SemVisto.enDesc}</option>
+                                            <option value={EnSelectTipoTemVisto.ComVisto.enValue} >{EnSelectTipoTemVisto.ComVisto.enDesc}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="input-group row">
+                                    <div className="input col-md-6 col-12 mt-3 d-flex align-items-center">
+                                        <input type="checkbox"
+                                            onChange={e => updateCalcHora(e)}
+                                            checked={presenceFilter.calcula_hora} />
+                                        <label className="ps-3" >Calcular Banco de Horas</label>
+                                        <button className="btn btn-secondary ms-3"
+                                            onMouseEnter={() => setExibirInfoCalc(true)}
+                                            onMouseLeave={() => setExibirInfoCalc(false)} ><FontAwesomeIcon icon={faCircleInfo} /></button>
+                                    </div>
+                                </div>
+
+                                {exibirInfoCalc && <div className="input-group row">
+                                    <div className="input col-12 mt-3">
+                                        <label>{message.presence.infoWorktime}</label>
+                                    </div>
+                                </div>}
+
+                                <div className="row">
+                                    <div className="col-12 d-flex justify-content-end">
+                                        <button className="btn btn-secondary mt-3"
+                                            onClick={() => clearFilter()}>
+                                            Limpar Filtros
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>}
+            </div>
+        )
+    }
     return (
         <Main {...headerProps}>
-            
-            {renderTable()}
+            {renderFilter()}
+            {presenceFilter.calcula_hora ? renderTableCalcHora() : renderTable()}
             {renderForm()}
             {(confirmModalProps.confirmQuestion.length > 0)
                 && <ConfirmModal

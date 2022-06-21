@@ -428,6 +428,7 @@ public class UsuarioService : IUsuarioService
                     MensagensErro = new List<string> { "Acesso negado." }
                 };
             }
+            await _usuarioRepository.ExcluirPresencasAsync(id);
             await _usuarioRepository.ExcluirSessoesAsync(id);
             await _usuarioRepository.UpdateAcessosAsync(id, new List<Acesso>());
             await _usuarioRepository.DeleteAsync(id);

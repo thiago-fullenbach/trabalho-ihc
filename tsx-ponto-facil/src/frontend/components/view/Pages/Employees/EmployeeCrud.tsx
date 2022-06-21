@@ -269,6 +269,52 @@ export default (props: EmployeeCrudProps): JSX.Element => {
         }
     }
     const clear = (): void => {
+        initialState.user.acessos = [
+            {
+                recurso_cod_en: 1,
+                eh_habilitado: true
+            },
+            {
+                recurso_cod_en: 2,
+                eh_habilitado: true
+            },
+            {
+                recurso_cod_en: 3,
+                eh_habilitado: false
+            },
+            {
+                recurso_cod_en: 4,
+                eh_habilitado: false
+            },
+            {
+                recurso_cod_en: 5,
+                eh_habilitado: false
+            },
+            {
+                recurso_cod_en: 6,
+                eh_habilitado: true
+            },
+            {
+                recurso_cod_en: 7,
+                eh_habilitado: true
+            },
+            {
+                recurso_cod_en: 8,
+                eh_habilitado: false
+            },
+            {
+                recurso_cod_en: 9,
+                eh_habilitado: true
+            },
+            {
+                recurso_cod_en: 10,
+                eh_habilitado: false
+            },
+            {
+                recurso_cod_en: 11,
+                eh_habilitado: false
+            }
+        ];
         setUser(initialState.user)
         setErro(initialState.erro)
         setMsg(initialState.msg)

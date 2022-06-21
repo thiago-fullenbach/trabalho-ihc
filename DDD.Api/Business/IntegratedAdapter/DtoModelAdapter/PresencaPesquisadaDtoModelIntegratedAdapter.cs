@@ -10,6 +10,7 @@ public class PresencaPesquisadaDtoModelIntegratedAdapter : IPresencaPesquisadaDt
     {
         PresencaPesquisadaDtoModel presencaDto = new PresencaPesquisadaDtoModelAdapter(presencaBusnAdaptee);
         presencaDto.Usuario_nome = presencaBusnAdaptee.UsuarioPresente.Nome;
+        presencaDto.Usuario_horas_diarias = presencaBusnAdaptee.UsuarioPresente.HorasDiarias;
         presencaDto.Local_resumo = $"{presencaBusnAdaptee.Local.NomeLogradouro} {presencaBusnAdaptee.Local.NumeroLogradouro}";
         return presencaDto;
     }

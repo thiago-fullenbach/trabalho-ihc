@@ -119,13 +119,17 @@ export default (props: NewEmployeeCrudProps): JSX.Element => {
 
                         <div className="input-group row">
                             {props.newUser.acessos.map((x, indx) => (
-                                <div key={indx} className="input col-md-6 col-12 mt-3 d-flex">
+                                x.recurso_cod_en != EnResource.VisualizarAjuste.resourceCode
+                                && x.recurso_cod_en != EnResource.VisualizarAjusteDemaisUsuarios.resourceCode
+                                && x.recurso_cod_en != EnResource.RegistrarAjusteDemaisUsuarios.resourceCode
+                                ? (<div key={indx} className="input col-md-6 col-12 mt-3 d-flex">
                                     <input type="checkbox"
                                         checked={x.eh_habilitado}
                                         onChange={e => props.publicUpdateAccess(e, x.recurso_cod_en)}
                                         disabled={!props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarAcessoTodosUsuarios)} />
                                     <label className="ps-3">{resourceDescription.find(y => y.recurso_cod_en === x.recurso_cod_en)?.recurso_desc}</label>
-                                </div>
+                                </div>)
+                                : (<div></div>)
                             ))}
                         </div>
                     </div>

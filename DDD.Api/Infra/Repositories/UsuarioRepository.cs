@@ -109,6 +109,13 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
         return collection;
     }
 
+    private IMongoCollection<Presenca> GetCollectionPresencas()
+    {
+        var collection = _connection.Client.GetDatabase(_databaseConfiguration.GetNomeBancoDados())
+            .GetCollection<Presenca>(_databaseConfiguration.GetNomeColecaoPresencas());
+        return collection;
+    }
+
     public async Task InsertAcessosAsync(int idUsuario, List<Acesso> acessos)
     {
         if (acessos.Count() == 0)
@@ -161,5 +168,11 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
     {
         var idEm24Digit = FormatTo24DigitHex(idUsuario.ToString());
         await GetCollectionSessoes().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+    }
+
+    public async Task ExcluirPresencasAsync(int idUsuario)
+    {
+        var idEm24Digit = FormatTo24DigitHex(idUsuario.ToString());
+        await GetCollectionPresencas().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
     }
 }

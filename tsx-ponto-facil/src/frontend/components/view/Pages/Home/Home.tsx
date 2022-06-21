@@ -29,53 +29,6 @@ type HomeProps = {
 export default (props: HomeProps): JSX.Element => {
     const [presencaList, setPresencaList] = useState(initialProps.list)
 
-    // useEffect(() => {
-    //     axios(baseUrl).then(resp => {
-    //         setPresencaList(resp.data)
-    //     })
-    // }, [])
-
-    // const getRowColor = status => {
-    //     if(status === "Aprovado") return "default"
-    //     if(status === "Reprovado") return "danger"
-    //     return "warning"
-    // }
-
-    const getLocation = (): void => {
-        props.loadingState.updateLoading(true);
-        (async (): Promise<void> => {
-            navigator.geolocation.getCurrentPosition(location => {
-                const storeCoords = location.coords
-                axios.get(`http://nominatim.openstreetmap.org/reverse?format=json&lat=${storeCoords.latitude}&lon=${storeCoords.longitude}&zoom=18&addressdetails=1`)
-                .then(response => {
-                    props.loadingState.updateLoading(false)
-                    console.log(response.data)
-                })
-            })
-        })()
-    }
-
-    // const renderRows = () => {
-    //     return presencaList.map(presenca => {
-    //         return (
-    //             <tr key={presenca.id}
-    //                 className={`table-${getRowColor(presenca.status)}`}>
-    //                 <td>{presenca.id}</td>
-    //                 <td>{presenca.tipoPresenca}</td>
-    //                 <td>{presenca.horaPresenca}</td>
-    //                 <td>{presenca.dataPresenca}</td>
-    //                 <td>{presenca.localPresenca}</td>
-    //                 <td>{presenca.status}</td>
-    //                 <td>
-    //                     <button className="btn btn-primary" tooltip="Ajustar">
-    //                         <FontAwesomeIcon icon={faClock} />
-    //                     </button>
-    //                 </td>
-    //             </tr>
-    //         )
-    //     })
-    // }
-
     return (
         <Main {...headerProps} >
             <h3>Bem-vindo ao Sistema Ponto Fácil!</h3>

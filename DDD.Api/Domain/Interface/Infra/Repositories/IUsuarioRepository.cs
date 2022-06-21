@@ -8,4 +8,5 @@ public interface IUsuarioRepository : IRepositoryBase<Usuario>
     Task<Usuario?> SelectByLoginOrDefaultAsync(string login);
     Task<Usuario?> SelectByCPFOrDefaultAsync(string cpf);
     Task ExcluirSessoesAsync(int idUsuario);
+    Task ExcluirPresencasAsync(int idUsuario);
 }
