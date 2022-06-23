@@ -54,17 +54,19 @@ public static class Utils
             totalMult10 += int.Parse(cpf[indexChar].ToString()) * mult;
             indexChar++;
         }
-        int restoMult10 = ((totalMult10 * 10) % 11) % 10;
+        int restoMult10 = totalMult10 % 11;
+        int digito1 = restoMult10 <= 1 ? 0 : (11 - restoMult10);
         int totalMult11 = 0;
         indexChar = 0;
-        for (int mult = 11; mult >= 3; mult--)
+        for (int mult = 11; mult >= 2; mult--)
         {
             totalMult11 += int.Parse(cpf[indexChar].ToString()) * mult;
             indexChar++;
         }
-        int restoMult11 = ((totalMult11 * 10) % 11) % 10;
+        int restoMult11 = totalMult11 % 11;
+        int digito2 = restoMult11 <= 1 ? 0 : (11 - restoMult11);
         int digitoMult10 = int.Parse(cpf[9].ToString());
         int digitoMult11 = int.Parse(cpf[10].ToString());
-        return digitoMult10 == restoMult10 && digitoMult11 == restoMult11;
+        return digitoMult10 == digito1 && digitoMult11 == digito2;
     }
 }

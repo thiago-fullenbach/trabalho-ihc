@@ -457,11 +457,9 @@ export default (props: EmployeeCrudProps): JSX.Element => {
             periodoFiltros.fim = presenceFilter.data_fim ?? new Date()
             usuarioWorktime.qtd_dias = periodoFiltros.getDiasAssociadosLocal()
                 .filter(y => y.getUTCDay() != 0 && y.getUTCDay() != 6).length
-            console.log(usuarioWorktime.usuario_horas_diarias)
             const totalPlanejadoMinutos = usuarioWorktime.qtd_dias * usuarioWorktime.usuario_horas_diarias * 60
             const trabalhadoExtraMinutos = usuarioWorktime.tempo_trabalhado_minutos > totalPlanejadoMinutos ? usuarioWorktime.tempo_trabalhado_minutos - totalPlanejadoMinutos : 0
             const trabalhadoFaltaMinutos = totalPlanejadoMinutos > usuarioWorktime.tempo_trabalhado_minutos ? totalPlanejadoMinutos - usuarioWorktime.tempo_trabalhado_minutos : 0
-            console.log(totalPlanejadoMinutos, trabalhadoExtraMinutos, trabalhadoFaltaMinutos)
             return usuarioWorktime;
         }))
     }
