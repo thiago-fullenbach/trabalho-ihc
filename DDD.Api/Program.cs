@@ -1,6 +1,9 @@
 using DDD.Api.BackEndApp.InversionOfControl;
 using DDD.Api.BackEndApp.v1.Middleware;
+using DDD.Api.Business.Services.DataServices.OutsideDI;
 using DDD.Api.Domain.Interface.Business.Services;
+using DDD.Api.Domain.Interface.Business.Services.DataServices;
+using DDD.Api.Domain.Interface.Business.Services.SchedulerService;
 using DDD.Api.InversionOfControl;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,11 +47,23 @@ if (app.Environment.IsDevelopment())
 // app.UseHttpsRedirection();
 
 app.UseCors(permissoesCorsNome);
+app.Use(AlimentacaoServiceProviderMiddleware.ProcessarAsync);
 app.Use(CargaMinimaMiddleware.ProcessarAsync);
 app.Use(ExceptionMiddleware.ProcessarAsync);
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+WebApplicationDataServiceOutsideDI.GetInstance().SetWebApplication(app);
+using (var serviceScope = app.Services.CreateScope())
+{
+    var services = serviceScope.ServiceProvider;
+
+    var serviceProviderDataService = services.GetRequiredService<IServiceProviderDataService>();
+    serviceProviderDataService.SetUltimoServiceProvider(services);
+    var schedulerService = services.GetRequiredService<ISchedulerService>();
+    await schedulerService.ScheduleExcluirSessoesAsync();
+}
 
 app.Run();

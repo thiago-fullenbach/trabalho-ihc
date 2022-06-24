@@ -19,4 +19,9 @@ public class MongoDbTransaction : ITransaction
     {
         await _sessionWrappee.AbortTransactionAsync();
     }
+
+    public IClientSessionHandle GetSessionWrappee()
+    {
+        return _sessionWrappee;
+    }
 }

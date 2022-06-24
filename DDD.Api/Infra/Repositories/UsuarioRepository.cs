@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using DDD.Api.Business;
+using DDD.Api.Business.Services.DataServices;
 using DDD.Api.Domain.Interface.Infra.Configuration.Database;
 using DDD.Api.Domain.Interface.Infra.Repositories;
 using DDD.Api.Domain.Interface.Infra.UnitOfWork;
@@ -14,8 +15,9 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
     public UsuarioRepository(IUnitOfWork uow,
                              MongoDbConnection connection,
                              IDatabaseConfiguration databaseConfiguration,
-                             IAcessoRepository acessoRepository)
-        : base(uow, connection, databaseConfiguration)
+                             IAcessoRepository acessoRepository,
+                             MongoDbTransactionDataService mongoDbTransactionDataService)
+        : base(uow, connection, databaseConfiguration, mongoDbTransactionDataService)
     {
         NomeColecaoEntidade = databaseConfiguration.GetNomeColecaoUsuarios();
         _acessoRepository = acessoRepository;
@@ -23,7 +25,10 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
 
     public async Task<List<Usuario>> SelectAllAsync()
     {
-        var usuarios = await GetCollection().Find(_ => true).ToListAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var usuarios = transaction == null 
+            ? await GetCollection().Find(_ => true).ToListAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), _ => true).ToListAsync();
         foreach (var usuario in usuarios)
         {
             usuario.Id = FormatToStringifiedNumber(usuario.Id);
@@ -34,7 +39,10 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
     public async Task<Usuario?> SelectByIdOrDefaultAsync(int id)
     {
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        var usuario = await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var usuario = transaction == null
+            ? await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.Id == id24Digit).FirstOrDefaultAsync();
         if (usuario == null)
         {
             return null;
@@ -65,7 +73,15 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
             throw new ArgumentException("insertId já existe no banco de dados.");
         }
         usuario.Id = FormatTo24DigitHex(insertId.ToString());
-        await GetCollection().InsertOneAsync(usuario);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().InsertOneAsync(usuario);
+        }
+        else
+        {
+            await GetCollection().InsertOneAsync(transaction.GetSessionWrappee(), usuario);
+        }
     }
 
     public async Task UpdateAsync(int id, Usuario usuario)
@@ -75,7 +91,15 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
             throw new ArgumentException("usuario com esse id não encontrado.");
         }
         usuario.Id = FormatTo24DigitHex(id.ToString());
-        await GetCollection().ReplaceOneAsync(x => x.Id == usuario.Id, usuario);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().ReplaceOneAsync(x => x.Id == usuario.Id, usuario);
+        }
+        else
+        {
+            await GetCollection().ReplaceOneAsync(transaction.GetSessionWrappee(), x => x.Id == usuario.Id, usuario);
+        }
     }
 
     public async Task DeleteAsync(int id)
@@ -85,13 +109,24 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
             throw new ArgumentException("usuario com esse id não encontrado.");
         }
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+        }
+        else
+        {
+            await GetCollection().DeleteOneAsync(transaction.GetSessionWrappee(), x => x.Id == id24Digit);
+        }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        var usuarioExiste = await GetCollection().Find(x => x.Id == id24Digit).AnyAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var usuarioExiste = transaction == null
+            ? await GetCollection().Find(x => x.Id == id24Digit).AnyAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.Id == id24Digit).AnyAsync();
         return usuarioExiste;
     }
 
@@ -138,13 +173,24 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
     public async Task UpdateAcessosAsync(int idUsuario, List<Acesso> acessos)
     {
         var idEm24Digit = FormatTo24DigitHex(idUsuario.ToString());
-        await GetCollectionAcessos().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollectionAcessos().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+        }
+        else
+        {
+            await GetCollectionAcessos().DeleteManyAsync(transaction.GetSessionWrappee(), x => x.usuario_id == idEm24Digit);
+        }
         await InsertAcessosAsync(idUsuario, acessos);
     }
 
     public async Task<Usuario?> SelectByLoginOrDefaultAsync(string login)
     {
-        var usuario = await GetCollection().Find(x => x.login == login).FirstOrDefaultAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var usuario = transaction == null
+            ? await GetCollection().Find(x => x.login == login).FirstOrDefaultAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.login == login).FirstOrDefaultAsync();
         if (usuario == null)
         {
             return null;
@@ -155,7 +201,10 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
 
     public async Task<Usuario?> SelectByCPFOrDefaultAsync(string cpf)
     {
-        var usuario = await GetCollection().Find(x => x.cpf == cpf).FirstOrDefaultAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var usuario = transaction == null 
+            ? await GetCollection().Find(x => x.cpf == cpf).FirstOrDefaultAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.cpf == cpf).FirstOrDefaultAsync();
         if (usuario == null)
         {
             return null;
@@ -167,12 +216,28 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
     public async Task ExcluirSessoesAsync(int idUsuario)
     {
         var idEm24Digit = FormatTo24DigitHex(idUsuario.ToString());
-        await GetCollectionSessoes().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollectionSessoes().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+        }
+        else
+        {
+            await GetCollectionSessoes().DeleteManyAsync(transaction.GetSessionWrappee(), x => x.usuario_id == idEm24Digit);
+        }
     }
 
     public async Task ExcluirPresencasAsync(int idUsuario)
     {
         var idEm24Digit = FormatTo24DigitHex(idUsuario.ToString());
-        await GetCollectionPresencas().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollectionPresencas().DeleteManyAsync(x => x.usuario_id == idEm24Digit);
+        }
+        else
+        {
+            await GetCollectionPresencas().DeleteManyAsync(transaction.GetSessionWrappee(), x => x.usuario_id == idEm24Digit);
+        }
     }
 }

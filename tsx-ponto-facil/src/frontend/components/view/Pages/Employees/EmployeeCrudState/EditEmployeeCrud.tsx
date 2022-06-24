@@ -133,7 +133,7 @@ export default (props: EditEmployeeCrudProps): JSX.Element => {
                                         disabled={!props.sessionState.loggedUserHasEnabledResourceByEnum(EnResource.CadastrarAcessoTodosUsuarios) || props.sessionState.loggedUser?.Id === props.editUser.id} />
                                     <label className="ps-3">{resourceDescription.find(y => y.recurso_cod_en === x.recurso_cod_en)?.recurso_desc}</label>
                                 </div>)
-                                : (<div></div>)
+                                : (<div key={indx}></div>)
                             ))}
                         </div>
                     </div>

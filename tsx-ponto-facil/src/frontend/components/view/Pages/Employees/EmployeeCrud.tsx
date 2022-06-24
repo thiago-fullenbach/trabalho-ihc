@@ -165,6 +165,7 @@ export default (props: EmployeeCrudProps): JSX.Element => {
     }
     useEffect((): void => {
         refreshSearchedUsers()
+        console.log('i only run once')
     }, [])
     const publicSaveNew = (): void => {
         props.loadingState.updateLoading(true);

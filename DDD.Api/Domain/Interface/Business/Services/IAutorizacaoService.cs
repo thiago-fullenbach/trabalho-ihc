@@ -8,5 +8,6 @@ public interface IAutorizacaoService
     string CriptografarSenhaAppInterno(string senha);
     Task<string> CriptografarSenhaAppExternoAsync(string urlEndpointCriptografarSenha, string senha);
     Task<string> CriptografarSenhaByUrlAsync(string urlEndpointCriptografarSenha, string senha);
+    Task<DateTime?> ObterExpiracaoMaisRecenteSessaoAsync();
     Task ExcluirSessoesExpiradasAsync();
 }

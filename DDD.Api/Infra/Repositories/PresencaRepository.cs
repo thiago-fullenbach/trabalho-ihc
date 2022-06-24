@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using DDD.Api.Business;
+using DDD.Api.Business.Services.DataServices;
 using DDD.Api.Domain.Interface.Infra.Configuration.Database;
 using DDD.Api.Domain.Interface.Infra.Repositories;
 using DDD.Api.Domain.Interface.Infra.UnitOfWork;
@@ -10,15 +11,21 @@ using MongoDB.Driver;
 namespace DDD.Api.Infra.Repositories;
 public class PresencaRepository : RepositoryBase<Presenca>, IPresencaRepository
 {
-    public PresencaRepository(IUnitOfWork uow, MongoDbConnection connection, IDatabaseConfiguration databaseConfiguration)
-        : base(uow, connection, databaseConfiguration)
+    public PresencaRepository(IUnitOfWork uow,
+                              MongoDbConnection connection,
+                              IDatabaseConfiguration databaseConfiguration,
+                              MongoDbTransactionDataService mongoDbTransactionDataService)
+        : base(uow, connection, databaseConfiguration, mongoDbTransactionDataService)
     {
         NomeColecaoEntidade = databaseConfiguration.GetNomeColecaoPresencas();
     }
 
     public async Task<List<Presenca>> SelectAllAsync()
     {
-        var presencas = await GetCollection().Find(_ => true).ToListAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var presencas = transaction == null
+            ? await GetCollection().Find(_ => true).ToListAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), _ => true).ToListAsync();
         foreach (var presenca in presencas)
         {
             presenca.Id = FormatToStringifiedNumber(presenca.Id);
@@ -31,7 +38,10 @@ public class PresencaRepository : RepositoryBase<Presenca>, IPresencaRepository
     public async Task<Presenca?> SelectByIdOrDefaultAsync(int id)
     {
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        var presenca = await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var presenca = transaction == null
+            ? await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.Id == id24Digit).FirstOrDefaultAsync();
         if (presenca == null)
         {
             return null;
@@ -66,7 +76,15 @@ public class PresencaRepository : RepositoryBase<Presenca>, IPresencaRepository
         presenca.Id = FormatTo24DigitHex(insertId.ToString());
         presenca.usuario_id = FormatTo24DigitHex(presenca.usuario_id);
         presenca.local_id = FormatTo24DigitHex(presenca.local_id);
-        await GetCollection().InsertOneAsync(presenca);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().InsertOneAsync(presenca);
+        }
+        else
+        {
+            await GetCollection().InsertOneAsync(transaction.GetSessionWrappee(), presenca);
+        }
     }
 
     public async Task UpdateAsync(int id, Presenca presenca)
@@ -78,7 +96,15 @@ public class PresencaRepository : RepositoryBase<Presenca>, IPresencaRepository
         presenca.Id = FormatTo24DigitHex(id.ToString());
         presenca.usuario_id = FormatTo24DigitHex(presenca.usuario_id);
         presenca.local_id = FormatTo24DigitHex(presenca.local_id);
-        await GetCollection().ReplaceOneAsync(x => x.Id == presenca.Id, presenca);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().ReplaceOneAsync(x => x.Id == presenca.Id, presenca);
+        }
+        else
+        {
+            await GetCollection().ReplaceOneAsync(transaction.GetSessionWrappee(), x => x.Id == presenca.Id, presenca);
+        }
     }
 
     public async Task DeleteAsync(int id)
@@ -88,20 +114,34 @@ public class PresencaRepository : RepositoryBase<Presenca>, IPresencaRepository
             throw new ArgumentException("presenca com esse id não encontrado.");
         }
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+        }
+        else
+        {
+            await GetCollection().DeleteOneAsync(transaction.GetSessionWrappee(), x => x.Id == id24Digit);
+        }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        var presencaExiste = await GetCollection().Find(x => x.Id == id24Digit).AnyAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var presencaExiste = transaction == null
+            ? await GetCollection().Find(x => x.Id == id24Digit).AnyAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.Id == id24Digit).AnyAsync();
         return presencaExiste;
     }
 
     public async Task<bool> NovaPresencaUsuarioEhEntradaAsync(int idUsuario)
     {
         var idEm24Digit = FormatTo24DigitHex(idUsuario.ToString());
-        var presencasUsuario = await GetCollection().Find(x => x.usuario_id == idEm24Digit).ToListAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var presencasUsuario = transaction == null
+            ? await GetCollection().Find(x => x.usuario_id == idEm24Digit).ToListAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.usuario_id == idEm24Digit).ToListAsync();
         if (presencasUsuario.Count == 0)
         {
             return true;

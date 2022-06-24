@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using System.Security.Cryptography;
 using DDD.Api.Business;
+using DDD.Api.Business.Services.DataServices;
 using DDD.Api.Domain.Interface.Infra.Configuration.Database;
 using DDD.Api.Domain.Interface.Infra.Repositories;
 using DDD.Api.Domain.Interface.Infra.UnitOfWork;
@@ -11,14 +12,20 @@ using MongoDB.Driver;
 namespace DDD.Api.Infra.Repositories;
 public class SessaoRepository : RepositoryBase<Sessao>, ISessaoRepository
 {
-    public SessaoRepository(IUnitOfWork uow, MongoDbConnection connection, IDatabaseConfiguration databaseConfiguration)
-        : base(uow, connection, databaseConfiguration)
+    public SessaoRepository(IUnitOfWork uow,
+                            MongoDbConnection connection,
+                            IDatabaseConfiguration databaseConfiguration,
+                            MongoDbTransactionDataService mongoDbTransactionDataService)
+        : base(uow, connection, databaseConfiguration, mongoDbTransactionDataService)
     {
         NomeColecaoEntidade = databaseConfiguration.GetNomeColecaoSessoes();
     }
     public async Task<List<Sessao>> SelectAllAsync()
     {
-        var sessoes = await GetCollection().Find(_ => true).ToListAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var sessoes = transaction == null
+            ? await GetCollection().Find(_ => true).ToListAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), _ => true).ToListAsync();
         foreach (var sessao in sessoes)
         {
             sessao.Id = FormatToStringifiedNumber(sessao.Id);
@@ -29,8 +36,11 @@ public class SessaoRepository : RepositoryBase<Sessao>, ISessaoRepository
 
     public async Task<Sessao?> SelectByIdOrDefaultAsync(int id)
     {
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        var sessao = await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync();
+        var sessao = transaction == null
+            ? await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.Id == id24Digit).FirstOrDefaultAsync();
         if (sessao == null)
         {
             return null;
@@ -63,7 +73,15 @@ public class SessaoRepository : RepositoryBase<Sessao>, ISessaoRepository
         }
         sessao.Id = FormatTo24DigitHex(insertId.ToString());
         sessao.usuario_id = FormatTo24DigitHex(sessao.usuario_id);
-        await GetCollection().InsertOneAsync(sessao);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().InsertOneAsync(sessao);
+        }
+        else
+        {
+            await GetCollection().InsertOneAsync(transaction.GetSessionWrappee(), sessao);
+        }
     }
 
     public async Task UpdateAsync(int id, Sessao sessao)
@@ -74,7 +92,15 @@ public class SessaoRepository : RepositoryBase<Sessao>, ISessaoRepository
         }
         sessao.Id = FormatTo24DigitHex(id.ToString());
         sessao.usuario_id = FormatTo24DigitHex(sessao.usuario_id);
-        await GetCollection().ReplaceOneAsync(x => x.Id == sessao.Id, sessao);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().ReplaceOneAsync(x => x.Id == sessao.Id, sessao);
+        }
+        else
+        {
+            await GetCollection().ReplaceOneAsync(transaction.GetSessionWrappee(), x => x.Id == sessao.Id, sessao);
+        }
     }
 
     public async Task DeleteAsync(int id)
@@ -84,13 +110,24 @@ public class SessaoRepository : RepositoryBase<Sessao>, ISessaoRepository
             throw new ArgumentException("sessao com esse id não encontrado.");
         }
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+        }
+        else
+        {
+            await GetCollection().DeleteOneAsync(transaction.GetSessionWrappee(), x => x.Id == id24Digit);
+        }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        var sessaoExiste = await GetCollection().Find(x => x.Id == id24Digit).AnyAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var sessaoExiste = transaction == null
+            ? await GetCollection().Find(x => x.Id == id24Digit).AnyAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.Id == id24Digit).AnyAsync();
         return sessaoExiste;
     }
 

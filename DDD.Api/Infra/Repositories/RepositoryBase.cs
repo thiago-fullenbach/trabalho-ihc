@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using DDD.Api.Business.Services.DataServices;
 using DDD.Api.Domain.Interface.Infra.Configuration.Database;
 using DDD.Api.Domain.Interface.Infra.Repositories;
 using DDD.Api.Domain.Interface.Infra.UnitOfWork;
@@ -12,11 +13,16 @@ public class RepositoryBase<T> where T : new()
     protected readonly IUnitOfWork _uow;
     protected readonly MongoDbConnection _connection;
     protected readonly IDatabaseConfiguration _databaseConfiguration;
-    public RepositoryBase(IUnitOfWork uow, MongoDbConnection connection, IDatabaseConfiguration databaseConfiguration)
+    protected readonly MongoDbTransactionDataService _mongoDbTransactionDataService;
+    public RepositoryBase(IUnitOfWork uow,
+                          MongoDbConnection connection,
+                          IDatabaseConfiguration databaseConfiguration,
+                          MongoDbTransactionDataService mongoDbTransactionDataService)
     {
         _uow = uow;
         _connection = connection;
         _databaseConfiguration = databaseConfiguration;
+        _mongoDbTransactionDataService = mongoDbTransactionDataService;
     }
     protected string? NomeColecaoEntidade { get; set; }
 

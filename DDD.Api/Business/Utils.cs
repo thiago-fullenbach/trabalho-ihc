@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace DDD.Api.Business;
 public static class Utils
 {
@@ -68,5 +70,11 @@ public static class Utils
         int digitoMult10 = int.Parse(cpf[9].ToString());
         int digitoMult11 = int.Parse(cpf[10].ToString());
         return digitoMult10 == digito1 && digitoMult11 == digito2;
+    }
+
+    public static string GetCronExpression(this DateTime horario)
+    {
+        var culturaEstadosUnidos = CultureInfo.GetCultureInfo("en-US");
+        return horario.ToString("s m H d MMM ? yyyy/1", culturaEstadosUnidos).ToUpper();
     }
 }

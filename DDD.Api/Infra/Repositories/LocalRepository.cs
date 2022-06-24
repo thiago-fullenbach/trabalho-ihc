@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using DDD.Api.Business;
+using DDD.Api.Business.Services.DataServices;
 using DDD.Api.Domain.Interface.Infra.Configuration.Database;
 using DDD.Api.Domain.Interface.Infra.Repositories;
 using DDD.Api.Domain.Interface.Infra.UnitOfWork;
@@ -10,15 +11,21 @@ using MongoDB.Driver;
 namespace DDD.Api.Infra.Repositories;
 public class LocalRepository : RepositoryBase<Local>, ILocalRepository
 {
-    public LocalRepository(IUnitOfWork uow, MongoDbConnection connection, IDatabaseConfiguration databaseConfiguration)
-        : base(uow, connection, databaseConfiguration)
+    public LocalRepository(IUnitOfWork uow,
+                           MongoDbConnection connection,
+                           IDatabaseConfiguration databaseConfiguration,
+                           MongoDbTransactionDataService mongoDbTransactionDataService)
+        : base(uow, connection, databaseConfiguration, mongoDbTransactionDataService)
     {
         NomeColecaoEntidade = databaseConfiguration.GetNomeColecaoLocais();
     }
 
     public async Task<List<Local>> SelectAllAsync()
     {
-        var locais = await GetCollection().Find(_ => true).ToListAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var locais = transaction == null
+            ? await GetCollection().Find(_ => true).ToListAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), _ => true).ToListAsync();
         foreach (var local in locais)
         {
             local.Id = FormatToStringifiedNumber(local.Id);
@@ -29,7 +36,10 @@ public class LocalRepository : RepositoryBase<Local>, ILocalRepository
     public async Task<Local?> SelectByIdOrDefaultAsync(int id)
     {
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        var local = await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var local = transaction == null
+            ? await GetCollection().Find(x => x.Id == id24Digit).FirstOrDefaultAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.Id == id24Digit).FirstOrDefaultAsync();
         if (local == null)
         {
             return null;
@@ -60,7 +70,15 @@ public class LocalRepository : RepositoryBase<Local>, ILocalRepository
             throw new ArgumentException("insertId já existe no banco de dados.");
         }
         local.Id = FormatTo24DigitHex(insertId.ToString());
-        await GetCollection().InsertOneAsync(local);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().InsertOneAsync(local);
+        }
+        else
+        {
+            await GetCollection().InsertOneAsync(transaction.GetSessionWrappee(), local);
+        }
     }
 
     public async Task UpdateAsync(int id, Local local)
@@ -70,7 +88,15 @@ public class LocalRepository : RepositoryBase<Local>, ILocalRepository
             throw new ArgumentException("local com esse id não encontrado.");
         }
         local.Id = FormatTo24DigitHex(id.ToString());
-        await GetCollection().ReplaceOneAsync(x => x.Id == local.Id, local);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().ReplaceOneAsync(x => x.Id == local.Id, local);
+        }
+        else
+        {
+            await GetCollection().ReplaceOneAsync(transaction.GetSessionWrappee(), x => x.Id == local.Id, local);
+        }
     }
 
     public async Task DeleteAsync(int id)
@@ -80,19 +106,39 @@ public class LocalRepository : RepositoryBase<Local>, ILocalRepository
             throw new ArgumentException("local com esse id não encontrado.");
         }
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        if (transaction == null)
+        {
+            await GetCollection().DeleteOneAsync(x => x.Id == id24Digit);
+        }
+        else
+        {
+            await GetCollection().DeleteOneAsync(transaction.GetSessionWrappee(), x => x.Id == id24Digit);
+        }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
         var id24Digit = FormatTo24DigitHex(id.ToString());
-        var localExiste = await GetCollection().Find(x => x.Id == id24Digit).AnyAsync();
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var localExiste = transaction == null
+            ? await GetCollection().Find(x => x.Id == id24Digit).AnyAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.Id == id24Digit).AnyAsync();
         return localExiste;
     }
 
     public async Task<Local?> SelectLocalSeJaCadastradoOrDefaultAsync(Local local)
     {
-        var localCom24Digit = await GetCollection().Find(x => x.cep == local.cep
+        var transaction = _mongoDbTransactionDataService.GetMongoDbTransaction();
+        var localCom24Digit = transaction == null
+            ? await GetCollection().Find(x => x.cep == local.cep
+            && x.logradouro == local.logradouro
+            && x.numero == local.numero
+            && x.complemento == local.complemento
+            && x.bairro == local.bairro
+            && x.cidade == local.cidade
+            && x.estado == local.estado).FirstOrDefaultAsync()
+            : await GetCollection().Find(transaction.GetSessionWrappee(), x => x.cep == local.cep
             && x.logradouro == local.logradouro
             && x.numero == local.numero
             && x.complemento == local.complemento

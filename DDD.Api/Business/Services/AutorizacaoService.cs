@@ -6,6 +6,7 @@ using DDD.Api.Domain.Interface.Business.IntegratedAdapter.BusnModelAdapter;
 using DDD.Api.Domain.Interface.Business.Services;
 using DDD.Api.Domain.Interface.Business.Services.DataServices;
 using DDD.Api.Domain.Interface.Business.Services.MicroService;
+using DDD.Api.Domain.Interface.Business.Services.SchedulerService;
 using DDD.Api.Domain.Interface.Infra.Configuration.BackEndApp;
 using DDD.Api.Domain.Interface.Infra.Repositories;
 using DDD.Api.Domain.Interface.Infra.UnitOfWork;
@@ -24,6 +25,7 @@ public class AutorizacaoService : IAutorizacaoService
     private readonly IBackEndAppConfiguration _backEndAppConfiguration;
     private readonly IUnitOfWork _uow;
     private readonly ISessaoBusnModelIntegratedAdapter _sessaoBusnModelIntegratedAdapter;
+    private readonly ISchedulerService _schedulerService;
     public AutorizacaoService(ISessaoAutenticadaDataService sessaoAutenticadaDataService,
                               IMicroService microService,
                               IUsuarioRepository usuarioRepository,
@@ -31,7 +33,8 @@ public class AutorizacaoService : IAutorizacaoService
                               IAcessoRepository acessoRepository,
                               IBackEndAppConfiguration backEndAppConfiguration,
                               IUnitOfWork uow,
-                              ISessaoBusnModelIntegratedAdapter sessaoBusnModelIntegratedAdapter)
+                              ISessaoBusnModelIntegratedAdapter sessaoBusnModelIntegratedAdapter,
+                              ISchedulerService schedulerService)
     {
         _sessaoAutenticadaDataService = sessaoAutenticadaDataService;
         _microService = microService;
@@ -41,6 +44,7 @@ public class AutorizacaoService : IAutorizacaoService
         _backEndAppConfiguration = backEndAppConfiguration;
         _uow = uow;
         _sessaoBusnModelIntegratedAdapter = sessaoBusnModelIntegratedAdapter;
+        _schedulerService = schedulerService;
     }
     public async Task LogarAsync(UsuarioBusnModel usuario)
     {
@@ -112,6 +116,7 @@ public class AutorizacaoService : IAutorizacaoService
             await transaction.RollbackAsync();
             throw ex;
         }
+        await _schedulerService.ScheduleExcluirSessoesAsync();
     }
 
     public async Task ReautenticarSessaoAsync()
@@ -149,6 +154,7 @@ public class AutorizacaoService : IAutorizacaoService
             await transaction.RollbackAsync();
             throw ex;
         }
+        await _schedulerService.ScheduleExcluirSessoesAsync();
     }
 
     public string CriptografarSenhaAppInterno(string senha)
@@ -196,6 +202,24 @@ public class AutorizacaoService : IAutorizacaoService
         return senhaCriptografada;
     }
 
+    public async Task<DateTime?> ObterExpiracaoMaisRecenteSessaoAsync()
+    {
+        var todasSessoes = await _sessaoRepository.SelectAllAsync();
+        if (todasSessoes.Count == 0)
+        {
+            return null;
+        }
+        var dataMaisRecente = todasSessoes[0].datahora_ultima_autenticacao + _backEndAppConfiguration.GetTempoExpirarSessao();
+        foreach (var sessao in todasSessoes)
+        {
+            if (dataMaisRecente < sessao.datahora_ultima_autenticacao + _backEndAppConfiguration.GetTempoExpirarSessao())
+            {
+                dataMaisRecente = sessao.datahora_ultima_autenticacao + _backEndAppConfiguration.GetTempoExpirarSessao();
+            }
+        }
+        return dataMaisRecente;
+    }
+
     public async Task ExcluirSessoesExpiradasAsync()
     {
         var todasSessoes = await _sessaoRepository.SelectAllAsync();
@@ -217,5 +241,6 @@ public class AutorizacaoService : IAutorizacaoService
             await transaction.RollbackAsync();
             throw ex;
         }
+        await _schedulerService.ScheduleExcluirSessoesAsync();
     }
 }
